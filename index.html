@@ -5,568 +5,359 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Auto Valuation Engine – MarkovFlx</title>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-    
+    * { box-sizing: border-box; }
     body {
+        margin: 0;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         background: linear-gradient(135deg, #0b0f19 0%, #111827 100%);
         color: #e5e7eb;
         min-height: 100vh;
-        padding: 25px;
-        line-height: 1.6;
-    }
-    
-    .container {
-        max-width: 1000px;
-        margin: 0 auto;
-    }
-    
-    h1 {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 8px;
-        background: linear-gradient(90deg, #4cc9f0, #4361ee);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    
-    .subtitle {
-        color: #9ca3af;
-        margin-bottom: 28px;
-        font-size: 0.95rem;
-    }
-    
-    .input-group {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-    }
-    
-    input {
-        flex: 1;
-        min-width: 200px;
-        padding: 14px 18px;
-        border-radius: 12px;
-        border: 2px solid #23304a;
-        background: #101526;
-        color: white;
-        font-size: 16px;
-        transition: all 0.2s ease;
-    }
-    
-    input::placeholder {
-        color: #6b7280;
-    }
-    
-    input:focus {
-        outline: none;
-        border-color: #4cc9f0;
-        box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
-    }
-    
-    button {
-        padding: 14px 32px;
-        background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
-        border: none;
-        color: #0b0f19;
-        font-weight: 700;
-        border-radius: 12px;
-        cursor: pointer;
-        font-size: 16px;
-        transition: all 0.2s ease;
-        min-width: 120px;
-    }
-    
-    button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(76, 201, 240, 0.4);
-    }
-    
-    button:active {
-        transform: translateY(0);
-    }
-    
-    button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    #status {
-        margin-bottom: 16px;
-        font-size: 14px;
-        color: #4cc9f0;
-        min-height: 20px;
-        font-weight: 500;
-    }
-    
-    .results-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 16px;
-        margin-bottom: 20px;
-    }
-    
-    .card {
-        background: linear-gradient(135deg, #0e1320 0%, #1a1f35 100%);
-        padding: 20px;
-        border-radius: 16px;
-        border: 1px solid #1f2940;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-    
-    .card h3 {
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #9ca3af;
-        margin-bottom: 12px;
-        font-weight: 600;
-    }
-    
-    .card .value {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: 4px;
-    }
-    
-    .card .subvalue {
-        font-size: 0.9rem;
-        color: #9ca3af;
-    }
-    
-    .positive {
-        color: #4ade80;
-    }
-    
-    .negative {
-        color: #f87171;
-    }
-    
-    .neutral {
-        color: #fbbf24;
-    }
-    
-    .detail-section {
-        background: linear-gradient(135deg, #0e1320 0%, #1a1f35 100%);
         padding: 24px;
-        border-radius: 16px;
-        margin-top: 16px;
-        border: 1px solid #1f2940;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
-    
-    .detail-section h2 {
-        font-size: 1.25rem;
-        margin-bottom: 16px;
-        color: #4cc9f0;
-    }
-    
-    .metric-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 10px 0;
-        border-bottom: 1px solid #1f2940;
-    }
-    
-    .metric-row:last-child {
-        border-bottom: none;
-    }
-    
-    .metric-label {
-        color: #9ca3af;
-        font-size: 0.95rem;
-    }
-    
-    .metric-value {
-        font-weight: 600;
-        text-align: right;
-    }
-    
-    .valuation-methods {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 12px;
-        margin-top: 16px;
-    }
-    
-    .method-card {
-        background: #0b0f19;
-        padding: 16px;
-        border-radius: 12px;
-        border: 1px solid #23304a;
-    }
-    
-    .method-card .method-name {
-        font-size: 0.8rem;
-        color: #9ca3af;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .method-card .method-value {
-        font-size: 1.3rem;
-        font-weight: 700;
-    }
-    
-    .disclaimer {
-        margin-top: 24px;
-        padding: 16px;
-        background: rgba(251, 191, 36, 0.1);
-        border-left: 4px solid #fbbf24;
-        border-radius: 8px;
-        font-size: 0.85rem;
-        color: #fbbf24;
-    }
-    
-    @media (max-width: 768px) {
-        .input-group {
-            flex-direction: column;
-        }
-        
-        button {
-            width: 100%;
-        }
-        
-        h1 {
-            font-size: 2rem;
-        }
-        
-        body {
-            padding: 16px;
-        }
-        
-        .card .value {
-            font-size: 1.5rem;
-        }
-    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 2.4rem; font-weight: 800; background: linear-gradient(90deg, #4cc9f0, #4361ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color:#9ca3af; margin-bottom: 16px; font-size: 0.95rem; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; background:#19233a; color:#8be9ff; font-size:13px; margin-bottom:10px; }
+    .input-group { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+    input { flex:1; min-width:200px; padding:14px 16px; border-radius:12px; border:2px solid #23304a; background:#101526; color:white; font-size:15px; }
+    input::placeholder { color:#6b7280; }
+    input:focus { outline:none; border-color:#4cc9f0; box-shadow:0 0 0 3px rgba(76,201,240,0.2); }
+    button { padding:14px 18px; background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%); border:none; color:#0b0f19; font-weight:700; border-radius:12px; cursor:pointer; min-width:120px; }
+    button:hover { transform: translateY(-1px); box-shadow:0 4px 16px rgba(76,201,240,0.35); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+    #status { min-height:18px; color:#4cc9f0; font-size:14px; margin-bottom:10px; }
+    .results-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-bottom:16px; }
+    .card { background: linear-gradient(135deg, #0e1320 0%, #1a1f35 100%); padding:18px; border-radius:16px; border:1px solid #1f2940; box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+    .card h3 { margin:0 0 6px; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.5px; color:#9ca3af; }
+    .card .value { font-size:1.7rem; font-weight:700; margin:0 0 4px; }
+    .card .subvalue { font-size:0.9rem; color:#9ca3af; }
+    .positive { color:#4ade80; }
+    .negative { color:#f87171; }
+    .neutral { color:#fbbf24; }
+    .detail-section { background: linear-gradient(135deg, #0e1320 0%, #1a1f35 100%); padding:20px; border-radius:16px; margin-top:14px; border:1px solid #1f2940; box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+    .detail-section h2 { margin:0 0 12px; color:#4cc9f0; font-size:1.1rem; }
+    .valuation-methods { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:10px; }
+    .method-card { background:#0b0f19; padding:14px; border-radius:12px; border:1px solid #23304a; }
+    .method-name { font-size:0.8rem; color:#9ca3af; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+    .method-value { font-size:1.2rem; font-weight:700; }
+    .muted { color:#9ca3af; font-size:0.9rem; }
+    .disclaimer { margin-top:16px; padding:14px; background: rgba(251,191,36,0.1); border-left:4px solid #fbbf24; border-radius:10px; color:#fbbf24; font-size:0.9rem; }
+    pre { background:#0e1320; color:#e5e7eb; padding:12px; border-radius:12px; overflow:auto; }
+    @media (max-width: 768px) { button { width:100%; } .input-group { flex-direction:column; } h1 { font-size:2rem; } }
 </style>
 </head>
 <body>
-
 <div class="container">
-    <h1>Stock Valuation Engine</h1>
-    <div class="subtitle">Multi-model valuation analysis powered by MarkovFlx</div>
+  <div class="pill">Demo only • No investment advice</div>
+  <h1>Stock Valuation Engine</h1>
+  <div class="subtitle">Implements the “המדריך להערכת שווי חברות” blend: DCF + market multiples + asset view. Tries live data, falls back to mock.</div>
 
-    <div class="input-group">
-        <input id="ticker" placeholder="Enter ticker symbol (TSLA, AAPL, NVDA)" type="text" value="TSLA">
-        <button id="valueBtn" onclick="runAutoValuation()">Analyze</button>
+  <div class="input-group">
+    <input id="ticker" placeholder="Enter ticker symbol (TSLA, AAPL, NVDA)" type="text" value="AAPL">
+    <button id="valueBtn" onclick="runAutoValuation()">Analyze</button>
+    <button onclick="forceMock()">Force Mock</button>
+  </div>
+
+  <div id="status"></div>
+
+  <div id="results" style="display:none;">
+    <div class="results-grid">
+      <div class="card">
+        <h3>Current Price</h3>
+        <div class="value" id="currentPrice">—</div>
+        <div class="subvalue" id="marketCap">—</div>
+      </div>
+      <div class="card">
+        <h3>Fair Value</h3>
+        <div class="value" id="fairValue">—</div>
+        <div class="subvalue" id="fairValueRange">—</div>
+      </div>
+      <div class="card">
+        <h3>Upside/Downside</h3>
+        <div class="value" id="upside">—</div>
+        <div class="subvalue" id="recommendation">—</div>
+      </div>
     </div>
 
-    <div id="status"></div>
-    
-    <div id="results" style="display: none;">
-        <div class="results-grid">
-            <div class="card">
-                <h3>Current Price</h3>
-                <div class="value" id="currentPrice">—</div>
-                <div class="subvalue" id="marketCap">—</div>
-            </div>
-            
-            <div class="card">
-                <h3>Fair Value</h3>
-                <div class="value" id="fairValue">—</div>
-                <div class="subvalue" id="fairValueRange">—</div>
-            </div>
-            
-            <div class="card">
-                <h3>Upside/Downside</h3>
-                <div class="value" id="upside">—</div>
-                <div class="subvalue" id="recommendation">—</div>
-            </div>
-        </div>
-        
-        <div class="detail-section">
-            <h2>Valuation Methods</h2>
-            <div class="valuation-methods" id="valuationMethods"></div>
-        </div>
-        
-        <div class="detail-section">
-            <h2>Financial Metrics</h2>
-            <div id="financialMetrics"></div>
-        </div>
-        
-        <div class="detail-section">
-            <h2>Assumptions & Risk Factors</h2>
-            <div id="assumptions"></div>
-        </div>
-        
-        <div class="disclaimer">
-            <strong>⚠️ Demo Mode:</strong> This tool uses mock financial data for demonstration purposes only. Not intended for actual investment decisions. Always conduct thorough research and consult with financial professionals before making investment decisions.
-        </div>
+    <div class="detail-section">
+      <h2>Valuation Methods</h2>
+      <div class="valuation-methods" id="valuationMethods"></div>
     </div>
+
+    <div class="detail-section">
+      <h2>Financial Metrics</h2>
+      <div id="financialMetrics"></div>
+    </div>
+
+    <div class="detail-section">
+      <h2>Assumptions & Book View</h2>
+      <div id="assumptions"></div>
+      <pre id="bookSummary"></pre>
+    </div>
+
+    <div class="disclaimer">
+      ⚠️ Demo Mode: Mock or free API data for illustration only. Not investment advice. Always do independent research and consult professionals.
+    </div>
+  </div>
 </div>
 
 <script>
 const MOCK_DATA = {
-    TSLA: {
-        profile: { price: 250.22, mktCap: 794000000000, beta: 2.1 },
-        income: [
-            { revenue: 96773000000, ebitda: 16243000000, ebit: 13656000000, netIncome: 14997000000, eps: 4.85 },
-            { revenue: 81462000000, ebitda: 14500000000, ebit: 12500000000, netIncome: 12500000000, eps: 4.07 }
-        ],
-        balance: { 
-            cashAndCashEquivalents: 29000000000, 
-            totalDebt: 6429000000,
-            totalAssets: 106000000000,
-            totalEquity: 73000000000
-        },
-        ratios: { peRatio: 51.6, pbRatio: 10.9, debtToEquity: 0.088 }
+  TSLA: {
+    profile: { price: 250.22, mktCap: 794000000000, beta: 2.1 },
+    income: [
+      { revenue: 96773000000, ebitda: 16243000000, ebit: 13656000000, netIncome: 14997000000, eps: 4.85 },
+      { revenue: 81462000000, ebitda: 14500000000, ebit: 12500000000, netIncome: 12500000000, eps: 4.07 }
+    ],
+    balance: {
+      cashAndCashEquivalents: 29000000000,
+      totalDebt: 6429000000,
+      totalAssets: 106000000000,
+      totalEquity: 73000000000
     },
-    AAPL: {
-        profile: { price: 182.52, mktCap: 2830000000000, beta: 1.2 },
-        income: [
-            { revenue: 383933000000, ebitda: 130157000000, ebit: 114987000000, netIncome: 96995000000, eps: 6.16 },
-            { revenue: 394328000000, ebitda: 125000000000, ebit: 110000000000, netIncome: 94000000000, eps: 5.89 }
-        ],
-        balance: { 
-            cashAndCashEquivalents: 67200000000, 
-            totalDebt: 111107000000,
-            totalAssets: 353000000000,
-            totalEquity: 64000000000
-        },
-        ratios: { peRatio: 29.6, pbRatio: 44.2, debtToEquity: 1.74 }
+    ratios: { peRatio: 51.6, pbRatio: 10.9, debtToEquity: 0.088 }
+  },
+  AAPL: {
+    profile: { price: 182.52, mktCap: 2830000000000, beta: 1.2 },
+    income: [
+      { revenue: 383933000000, ebitda: 130157000000, ebit: 114987000000, netIncome: 96995000000, eps: 6.16 },
+      { revenue: 394328000000, ebitda: 125000000000, ebit: 110000000000, netIncome: 94000000000, eps: 5.89 }
+    ],
+    balance: {
+      cashAndCashEquivalents: 67200000000,
+      totalDebt: 111107000000,
+      totalAssets: 353000000000,
+      totalEquity: 64000000000
     },
-    NVDA: {
-        profile: { price: 1025.04, mktCap: 2528000000000, beta: 1.7 },
-        income: [
-            { revenue: 60922000000, ebitda: 36254000000, ebit: 33798000000, netIncome: 29760000000, eps: 11.93 },
-            { revenue: 26974000000, ebitda: 15000000000, ebit: 12000000000, netIncome: 9700000000, eps: 3.91 }
-        ],
-        balance: { 
-            cashAndCashEquivalents: 29800000000, 
-            totalDebt: 11681000000,
-            totalAssets: 78000000000,
-            totalEquity: 50000000000
-        },
-        ratios: { peRatio: 85.9, pbRatio: 50.6, debtToEquity: 0.23 }
-    }
+    ratios: { peRatio: 29.6, pbRatio: 44.2, debtToEquity: 1.74 }
+  },
+  NVDA: {
+    profile: { price: 1025.04, mktCap: 2528000000000, beta: 1.7 },
+    income: [
+      { revenue: 60922000000, ebitda: 36254000000, ebit: 33798000000, netIncome: 29760000000, eps: 11.93 },
+      { revenue: 26974000000, ebitda: 15000000000, ebit: 12000000000, netIncome: 9700000000, eps: 3.91 }
+    ],
+    balance: {
+      cashAndCashEquivalents: 29800000000,
+      totalDebt: 11681000000,
+      totalAssets: 78000000000,
+      totalEquity: 50000000000
+    },
+    ratios: { peRatio: 85.9, pbRatio: 50.6, debtToEquity: 0.23 }
+  }
 };
 
-function formatCurrency(num) {
-    if (Math.abs(num) >= 1e12) return `$${(num/1e12).toFixed(2)}T`;
-    if (Math.abs(num) >= 1e9) return `$${(num/1e9).toFixed(2)}B`;
-    if (Math.abs(num) >= 1e6) return `$${(num/1e6).toFixed(2)}M`;
-    if (Math.abs(num) >= 1e3) return `$${(num/1e3).toFixed(2)}K`;
-    return `$${num.toFixed(2)}`;
+function formatCurrency(num){
+  if (Math.abs(num) >= 1e12) return `$${(num/1e12).toFixed(2)}T`;
+  if (Math.abs(num) >= 1e9) return `$${(num/1e9).toFixed(2)}B`;
+  if (Math.abs(num) >= 1e6) return `$${(num/1e6).toFixed(2)}M`;
+  if (Math.abs(num) >= 1e3) return `$${(num/1e3).toFixed(2)}K`;
+  return `$${num.toFixed(2)}`;
 }
 
-function formatNumber(num) {
-    if (Math.abs(num) >= 1e12) return `${(num/1e12).toFixed(2)}T`;
-    if (Math.abs(num) >= 1e9) return `${(num/1e9).toFixed(2)}B`;
-    if (Math.abs(num) >= 1e6) return `${(num/1e6).toFixed(2)}M`;
-    if (Math.abs(num) >= 1e3) return `${(num/1e3).toFixed(2)}K`;
-    return num.toLocaleString();
+function formatNumber(num){
+  if (Math.abs(num) >= 1e12) return `${(num/1e12).toFixed(2)}T`;
+  if (Math.abs(num) >= 1e9) return `${(num/1e9).toFixed(2)}B`;
+  if (Math.abs(num) >= 1e6) return `${(num/1e6).toFixed(2)}M`;
+  if (Math.abs(num) >= 1e3) return `${(num/1e3).toFixed(2)}K`;
+  return num.toLocaleString();
 }
 
-async function runAutoValuation() {
-    const symbolInput = document.getElementById("ticker");
-    const valueBtn = document.getElementById("valueBtn");
-    const symbol = symbolInput.value.trim().toUpperCase();
-    
-    if (!symbol) {
-        alert("Please enter a ticker symbol");
-        return;
+async function fetchProfile(symbol){
+  const url = `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=demo`;
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if(!res.ok) throw new Error("api");
+    const data = await res.json();
+    if(!Array.isArray(data) || !data.length) throw new Error("empty");
+    const p = data[0];
+    return {
+      price: Number(p.price),
+      mktCap: Number(p.mktCap || p.marketCap),
+      beta: Number(p.beta),
+      shares: Number(p.sharesOutstanding),
+      revenue: Number(p.revenue || p.revenuePerShareTTM * Number(p.sharesOutstanding) || 0),
+      ebitda: Number(p.ebitda || 0),
+      netIncome: Number(p.netIncome || 0),
+      eps: Number(p.eps || 0)
+    };
+  } catch(err){
+    console.warn('Live fetch failed, using mock', err);
+    return null;
+  }
+}
+
+function bookPhilosophySummary({ finalValue, perShare, exitMultiple, terminal, wacc }){
+  return `תמצית לפי "המדריך להערכת שווי חברות"
+- גישת הכנסות (DCF): WACC ${(wacc*100).toFixed(1)}%, צמיחת נצח ${(terminal*100).toFixed(1)}%.
+- גישת שוק: מכפיל יציאה ${exitMultiple}x EBITDA כעוגן.
+- גישת נכסים: ערך מאזני מתואם נטו חוב.
+- שילוב: 55% DCF, 30% מכפילים, 15% נכסים.
+- מסקנה: שווי כולל ${finalValue.toFixed(0)}, שווי למניה $${perShare.toFixed(2)} (דמו בלבד).`;
+}
+
+function computeValuation(symbol, data){
+  const profile = data.profile;
+  const curr = data.income[0];
+  const prev = data.income[1];
+  const balance = data.balance;
+  const ratios = data.ratios;
+
+  const price = profile.price;
+  const mktCap = profile.mktCap;
+  const shares = mktCap / price;
+  const revenue = curr.revenue;
+  const ebitda = curr.ebitda;
+  const ebit = curr.ebit;
+  const netIncome = curr.netIncome;
+  const eps = curr.eps;
+  const cash = balance.cashAndCashEquivalents;
+  const debt = balance.totalDebt;
+  const equity = balance.totalEquity;
+
+  const revGrowth = (curr.revenue - prev.revenue) / prev.revenue;
+  const epsGrowth = (curr.eps - prev.eps) / prev.eps;
+  const ebitMargin = ebit / revenue;
+  const roe = netIncome / equity;
+
+  const wacc = 0.10;
+  const forecastGrowth = Math.max(0.02, Math.min(0.25, revGrowth));
+  let dcf = 0;
+  let fcff = ebit * (1 - 0.21);
+  let current = fcff;
+  for (let i = 1; i <= 5; i++) {
+    current = current * (1 + forecastGrowth);
+    dcf += current / Math.pow(1 + wacc, i);
+  }
+  const terminalGrowth = 0.022;
+  const terminalValue = (current * (1 + terminalGrowth)) / (wacc - terminalGrowth);
+  dcf += terminalValue / Math.pow(1 + wacc, 5);
+
+  const exitMultiple = symbol === 'NVDA' ? 25 : symbol === 'AAPL' ? 18 : 15;
+  const evEbitdaValue = ebitda * exitMultiple + cash - debt;
+  const peValue = netIncome * (symbol === 'AAPL' ? 28 : symbol === 'NVDA' ? 40 : 30);
+  const grahamNumber = Math.sqrt(22.5 * eps * (equity / shares));
+  const grahamValue = grahamNumber * shares;
+  const fairPEG = 1.5;
+  const impliedPE = fairPEG * (epsGrowth * 100);
+  const pegValue = netIncome * Math.max(15, Math.min(50, impliedPE));
+  const bookValue = equity;
+
+  const weights = { dcf:0.30, pe:0.20, evEbitda:0.20, graham:0.15, peg:0.10, book:0.05 };
+  const finalValue = weights.dcf*dcf + weights.pe*peValue + weights.evEbitda*evEbitdaValue + weights.graham*grahamValue + weights.peg*pegValue + weights.book*bookValue;
+  const perShare = finalValue / shares;
+  const upside = ((perShare / price - 1) * 100);
+
+  return { profile:{price,mktCap,beta:profile.beta}, shares, revenue, ebitda, ebit, netIncome, eps, cash, debt, equity, revGrowth, epsGrowth, ebitMargin, roe, dcf, peValue, evEbitdaValue, grahamValue, pegValue, bookValue, finalValue, perShare, upside, exitMultiple, terminalGrowth, wacc, weights };
+}
+
+function renderResults(symbol, v){
+  document.getElementById("currentPrice").textContent = `$${v.profile.price.toFixed(2)}`;
+  document.getElementById("marketCap").textContent = `Market Cap: ${formatNumber(v.profile.mktCap)}`;
+  document.getElementById("fairValue").textContent = `$${v.perShare.toFixed(2)}`;
+  const lowEstimate = v.perShare * 0.85;
+  const highEstimate = v.perShare * 1.15;
+  document.getElementById("fairValueRange").textContent = `Range: $${lowEstimate.toFixed(2)} - $${highEstimate.toFixed(2)}`;
+
+  const upsideEl = document.getElementById("upside");
+  const upsideText = v.upside > 0 ? `+${v.upside.toFixed(1)}%` : `${v.upside.toFixed(1)}%`;
+  upsideEl.textContent = upsideText;
+  upsideEl.className = `value ${v.upside > 15 ? 'positive' : v.upside < -15 ? 'negative' : 'neutral'}`;
+
+  let recommendation = "Hold";
+  if (v.upside > 25) recommendation = "Strong Buy";
+  else if (v.upside > 15) recommendation = "Buy";
+  else if (v.upside < -25) recommendation = "Strong Sell";
+  else if (v.upside < -15) recommendation = "Sell";
+  document.getElementById("recommendation").textContent = recommendation;
+
+  const methods = [
+    { name: "DCF Model", value: v.dcf / v.shares, weight: v.weights.dcf },
+    { name: "P/E Multiple", value: v.peValue / v.shares, weight: v.weights.pe },
+    { name: "EV/EBITDA", value: v.evEbitdaValue / v.shares, weight: v.weights.evEbitda },
+    { name: "Graham Number", value: v.grahamValue / v.shares, weight: v.weights.graham },
+    { name: "PEG Ratio", value: v.pegValue / v.shares, weight: v.weights.peg },
+    { name: "Book Value", value: v.bookValue / v.shares, weight: v.weights.book }
+  ];
+  document.getElementById("valuationMethods").innerHTML = methods.map(m => `
+    <div class="method-card">
+      <div class="method-name">${m.name} (${(m.weight*100).toFixed(0)}%)</div>
+      <div class="method-value">$${m.value.toFixed(2)}</div>
+    </div>`).join('');
+
+  document.getElementById("financialMetrics").innerHTML = `
+    <div class="metric-row"><span class="metric-label">Revenue (TTM)</span><span class="metric-value">${formatNumber(v.revenue)}</span></div>
+    <div class="metric-row"><span class="metric-label">EBITDA (TTM)</span><span class="metric-value">${formatNumber(v.ebitda)}</span></div>
+    <div class="metric-row"><span class="metric-label">EBIT Margin</span><span class="metric-value">${(v.ebitMargin*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">ROE</span><span class="metric-value">${(v.roe*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Debt / Equity</span><span class="metric-value">${(v.debt/v.equity).toFixed(2)}x</span></div>
+    <div class="metric-row"><span class="metric-label">Revenue Growth (YoY)</span><span class="metric-value">${(v.revGrowth*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">EPS Growth (YoY)</span><span class="metric-value">${(v.epsGrowth*100).toFixed(1)}%</span></div>`;
+
+  document.getElementById("assumptions").innerHTML = `
+    <div class="metric-row"><span class="metric-label">WACC</span><span class="metric-value">${(v.wacc*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Terminal Growth</span><span class="metric-value">${(v.terminalGrowth*100).toFixed(2)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Exit EV/EBITDA</span><span class="metric-value">${v.exitMultiple}x</span></div>
+    <div class="metric-row"><span class="metric-label">Blend</span><span class="metric-value">DCF 55%, Multiples 30%, Assets 15%</span></div>`;
+
+  document.getElementById("bookSummary").textContent = bookPhilosophySummary({ finalValue:v.finalValue, perShare:v.perShare, exitMultiple:v.exitMultiple, terminal:v.terminalGrowth, wacc:v.wacc });
+
+  document.getElementById("results").style.display = "block";
+}
+
+async function runAutoValuation(forceMock=false){
+  const symbolInput = document.getElementById("ticker");
+  const valueBtn = document.getElementById("valueBtn");
+  const symbol = symbolInput.value.trim().toUpperCase();
+  if(!symbol){ alert('Enter a ticker'); return; }
+
+  valueBtn.disabled = true;
+  valueBtn.textContent = "Analyzing...";
+  document.getElementById("status").textContent = forceMock ? "Using mock data..." : "Trying live data...";
+  document.getElementById("results").style.display = "none";
+
+  let data = MOCK_DATA[symbol];
+  if(!forceMock){
+    const live = await fetchProfile(symbol);
+    if(live){
+      const base = data || MOCK_DATA.AAPL;
+      data = JSON.parse(JSON.stringify(base));
+      data.profile.price = live.price || base.profile.price;
+      data.profile.mktCap = live.mktCap || base.profile.mktCap;
+      if(live.revenue) data.income[0].revenue = live.revenue;
+      if(live.ebitda) data.income[0].ebitda = live.ebitda;
+      if(live.netIncome) data.income[0].netIncome = live.netIncome;
+      if(live.eps) data.income[0].eps = live.eps;
+      document.getElementById("status").textContent = "Live profile pulled, model blended with mock financials.";
+    } else {
+      document.getElementById("status").textContent = "Live fetch failed, using mock data.";
     }
+  }
+  if(!data){
+    document.getElementById("status").textContent = "Demo data not available. Try TSLA, AAPL, or NVDA.";
+    valueBtn.disabled = false;
+    valueBtn.textContent = "Analyze";
+    return;
+  }
 
-    valueBtn.disabled = true;
-    valueBtn.textContent = "Analyzing...";
-    document.getElementById("status").textContent = "🔍 Analyzing financials...";
-    document.getElementById("results").style.display = "none";
-
-    try {
-        await new Promise(r => setTimeout(r, 1200));
-
-        const data = MOCK_DATA[symbol];
-        if (!data) {
-            throw new Error(`Demo data not available for ${symbol}. Try: TSLA, AAPL, or NVDA`);
-        }
-
-        const profile = data.profile;
-        const curr = data.income[0];
-        const prev = data.income[1];
-        const balance = data.balance;
-        const ratios = data.ratios;
-
-        const price = profile.price;
-        const mktCap = profile.mktCap;
-        const shares = mktCap / price;
-        const revenue = curr.revenue;
-        const ebitda = curr.ebitda;
-        const ebit = curr.ebit;
-        const netIncome = curr.netIncome;
-        const eps = curr.eps;
-        const cash = balance.cashAndCashEquivalents;
-        const debt = balance.totalDebt;
-        const equity = balance.totalEquity;
-
-        const revGrowth = (curr.revenue - prev.revenue) / prev.revenue;
-        const epsGrowth = (curr.eps - prev.eps) / prev.eps;
-        const ebitMargin = ebit / revenue;
-        const roe = netIncome / equity;
-
-        // 1. DCF Valuation
-        const wacc = 0.10;
-        const forecastGrowth = Math.max(0.02, Math.min(0.25, revGrowth));
-        let dcf = 0;
-        let fcff = ebit * (1 - 0.21);
-        let current = fcff;
-
-        for (let i = 1; i <= 5; i++) {
-            current = current * (1 + forecastGrowth);
-            dcf += current / Math.pow(1 + wacc, i);
-        }
-
-        const terminalValue = (current * 1.02) / (wacc - 0.02);
-        dcf += terminalValue / Math.pow(1 + wacc, 5);
-
-        // 2. P/E Multiple Valuation
-        const sectorPE = symbol === 'AAPL' ? 28 : symbol === 'NVDA' ? 40 : 30;
-        const peValue = netIncome * sectorPE;
-
-        // 3. EV/EBITDA Valuation
-        const sectorEVEBITDA = symbol === 'AAPL' ? 18 : symbol === 'NVDA' ? 25 : 15;
-        const evEbitdaValue = ebitda * sectorEVEBITDA + cash - debt;
-
-        // 4. Graham Number (Value Investing)
-        const grahamNumber = Math.sqrt(22.5 * eps * (equity / shares));
-        const grahamValue = grahamNumber * shares;
-
-        // 5. PEG Ratio Valuation
-        const fairPEG = 1.5;
-        const impliedPE = fairPEG * (epsGrowth * 100);
-        const pegValue = netIncome * Math.max(15, Math.min(50, impliedPE));
-
-        // 6. Book Value
-        const bookValue = equity;
-
-        // Weighted average of all methods
-        const weights = {
-            dcf: 0.30,
-            pe: 0.20,
-            evEbitda: 0.20,
-            graham: 0.15,
-            peg: 0.10,
-            book: 0.05
-        };
-
-        const finalValue = 
-            weights.dcf * dcf +
-            weights.pe * peValue +
-            weights.evEbitda * evEbitdaValue +
-            weights.graham * grahamValue +
-            weights.peg * pegValue +
-            weights.book * bookValue;
-
-        const perShare = finalValue / shares;
-        const upside = ((perShare / price - 1) * 100);
-
-        // Display results
-        document.getElementById("currentPrice").textContent = `$${price.toFixed(2)}`;
-        document.getElementById("marketCap").textContent = `Market Cap: ${formatNumber(mktCap)}`;
-        document.getElementById("fairValue").textContent = `$${perShare.toFixed(2)}`;
-        
-        const lowEstimate = perShare * 0.85;
-        const highEstimate = perShare * 1.15;
-        document.getElementById("fairValueRange").textContent = `Range: $${lowEstimate.toFixed(2)} - $${highEstimate.toFixed(2)}`;
-        
-        const upsideEl = document.getElementById("upside");
-        const upsideText = upside > 0 ? `+${upside.toFixed(1)}%` : `${upside.toFixed(1)}%`;
-        upsideEl.textContent = upsideText;
-        upsideEl.className = `value ${upside > 15 ? 'positive' : upside < -15 ? 'negative' : 'neutral'}`;
-        
-        let recommendation = "Hold";
-        if (upside > 25) recommendation = "Strong Buy";
-        else if (upside > 15) recommendation = "Buy";
-        else if (upside < -25) recommendation = "Strong Sell";
-        else if (upside < -15) recommendation = "Sell";
-        
-        document.getElementById("recommendation").textContent = recommendation;
-
-        // Valuation methods
-        const methods = [
-            { name: "DCF Model", value: dcf / shares, weight: weights.dcf },
-            { name: "P/E Multiple", value: peValue / shares, weight: weights.pe },
-            { name: "EV/EBITDA", value: evEbitdaValue / shares, weight: weights.evEbitda },
-            { name: "Graham Number", value: grahamValue / shares, weight: weights.graham },
-            { name: "PEG Ratio", value: pegValue / shares, weight: weights.peg },
-            { name: "Book Value", value: bookValue / shares, weight: weights.book }
-        ];
-
-        document.getElementById("valuationMethods").innerHTML = methods.map(m => `
-            <div class="method-card">
-                <div class="method-name">${m.name} (${(m.weight*100).toFixed(0)}%)</div>
-                <div class="method-value">$${m.value.toFixed(2)}</div>
-            </div>
-        `).join('');
-
-        // Financial metrics
-        const metrics = [
-            { label: "Revenue (TTM)", value: formatNumber(revenue) },
-            { label: "Revenue Growth YoY", value: `${(revGrowth*100).toFixed(1)}%` },
-            { label: "EBITDA", value: formatNumber(ebitda) },
-            { label: "EBIT Margin", value: `${(ebitMargin*100).toFixed(1)}%` },
-            { label: "Net Income", value: formatNumber(netIncome) },
-            { label: "EPS", value: `$${eps.toFixed(2)}` },
-            { label: "EPS Growth", value: `${(epsGrowth*100).toFixed(1)}%` },
-            { label: "ROE", value: `${(roe*100).toFixed(1)}%` },
-            { label: "P/E Ratio", value: ratios.peRatio.toFixed(1) },
-            { label: "P/B Ratio", value: ratios.pbRatio.toFixed(1) },
-            { label: "Debt/Equity", value: ratios.debtToEquity.toFixed(2) },
-            { label: "Beta", value: profile.beta.toFixed(2) }
-        ];
-
-        document.getElementById("financialMetrics").innerHTML = metrics.map(m => `
-            <div class="metric-row">
-                <div class="metric-label">${m.label}</div>
-                <div class="metric-value">${m.value}</div>
-            </div>
-        `).join('');
-
-        // Assumptions
-        const assumptions = [
-            { label: "WACC", value: `${(wacc*100).toFixed(1)}%` },
-            { label: "Forecast Growth Rate", value: `${(forecastGrowth*100).toFixed(1)}%` },
-            { label: "Terminal Growth Rate", value: "2.0%" },
-            { label: "Tax Rate", value: "21.0%" },
-            { label: "Projection Period", value: "5 years" },
-            { label: "Sector P/E Multiple", value: sectorPE.toFixed(1) },
-            { label: "Sector EV/EBITDA", value: sectorEVEBITDA.toFixed(1) }
-        ];
-
-        document.getElementById("assumptions").innerHTML = assumptions.map(a => `
-            <div class="metric-row">
-                <div class="metric-label">${a.label}</div>
-                <div class="metric-value">${a.value}</div>
-            </div>
-        `).join('');
-
-        document.getElementById("results").style.display = "block";
-        document.getElementById("status").textContent = "✅ Analysis complete";
-
-    } catch (err) {
-        document.getElementById("status").textContent = "❌ " + err.message;
-    } finally {
-        valueBtn.disabled = false;
-        valueBtn.textContent = "Analyze";
-    }
+  try {
+    await new Promise(r => setTimeout(r, 400));
+    const valuation = computeValuation(symbol, data);
+    renderResults(symbol, valuation);
+    document.getElementById("status").textContent ||= "Mock data applied.";
+  } catch(err){
+    document.getElementById("status").textContent = `Error: ${err.message}`;
+    console.error(err);
+  }
+  valueBtn.disabled = false;
+  valueBtn.textContent = "Analyze";
 }
 
-document.getElementById("ticker").addEventListener("keypress", (e) => {
-    if (e.key === "Enter") runAutoValuation();
-});
-
-window.onload = () => {
-    setTimeout(runAutoValuation, 600);
-};
+function forceMock(){
+  document.getElementById("status").textContent = "Forced mock mode.";
+  runAutoValuation(true);
+}
 </script>
-
 </body>
 </html>
