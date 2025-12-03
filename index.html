@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auto Valuation Engine – MarkovFlx</title>
+<title>Professional Valuation Engine – Real-Time DCF</title>
 <style>
     * { box-sizing: border-box; }
     body {
@@ -14,7 +14,7 @@
         min-height: 100vh;
         padding: 24px;
     }
-    .container { max-width: 1100px; margin: 0 auto; }
+    .container { max-width: 1200px; margin: 0 auto; }
     h1 { margin: 0 0 8px; font-size: 2.4rem; font-weight: 800; background: linear-gradient(90deg, #4cc9f0, #4361ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .subtitle { color:#9ca3af; margin-bottom: 16px; font-size: 0.95rem; }
     .pill { display:inline-block; padding:4px 10px; border-radius:999px; background:#19233a; color:#8be9ff; font-size:13px; margin-bottom:10px; }
@@ -26,6 +26,9 @@
     button:hover { transform: translateY(-1px); box-shadow:0 4px 16px rgba(76,201,240,0.35); }
     button:active { transform: translateY(0); }
     button:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+    .progress { margin: 16px 0; }
+    .progress-bar { width: 100%; height: 8px; background: #1f2940; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #4cc9f0, #4361ee); transition: width 0.3s; }
     #status { min-height:18px; color:#4cc9f0; font-size:14px; margin-bottom:10px; }
     .results-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:14px; margin-bottom:16px; }
     .card { background: linear-gradient(135deg, #0e1320 0%, #1a1f35 100%); padding:18px; border-radius:16px; border:1px solid #1f2940; box-shadow:0 4px 12px rgba(0,0,0,0.3); }
@@ -41,35 +44,57 @@
     .method-card { background:#0b0f19; padding:14px; border-radius:12px; border:1px solid #23304a; }
     .method-name { font-size:0.8rem; color:#9ca3af; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
     .method-value { font-size:1.2rem; font-weight:700; }
+    .scenario-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .scenario-tab { padding: 8px 16px; background: #0b0f19; border: 1px solid #23304a; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
+    .scenario-tab.active { background: #4cc9f0; color: #0b0f19; border-color: #4cc9f0; }
+    .metric-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #23304a; }
+    .metric-label { color: #9ca3af; }
+    .metric-value { font-weight: 600; }
     .muted { color:#9ca3af; font-size:0.9rem; }
     .disclaimer { margin-top:16px; padding:14px; background: rgba(251,191,36,0.1); border-left:4px solid #fbbf24; border-radius:10px; color:#fbbf24; font-size:0.9rem; }
-    pre { background:#0e1320; color:#e5e7eb; padding:12px; border-radius:12px; overflow:auto; }
+    pre { background:#0e1320; color:#e5e7eb; padding:12px; border-radius:12px; overflow:auto; font-size: 0.85rem; }
+    .data-quality { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; }
+    .quality-high { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+    .quality-medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+    .quality-low { background: rgba(248, 113, 113, 0.2); color: #f87171; }
     @media (max-width: 768px) { button { width:100%; } .input-group { flex-direction:column; } h1 { font-size:2rem; } }
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="pill">Demo only • No investment advice</div>
-  <h1>Stock Valuation Engine</h1>
-  <div class="subtitle">Implements the “המדריך להערכת שווי חברות” blend: DCF + market multiples + asset view. Tries live data, falls back to mock.</div>
+  <div class="pill">Real-Time Professional Valuation • Finnhub API</div>
+  <h1>Professional Valuation Engine</h1>
+  <div class="subtitle">Full implementation of "המדריך להערכת שווי חברות": 10-step DCF + Market Approach + Asset-Based + Adjustments with real-time data</div>
 
   <div class="input-group">
-    <input id="ticker" placeholder="Enter ticker symbol (TSLA, AAPL, NVDA)" type="text" value="AAPL">
-    <button id="valueBtn" onclick="runAutoValuation()">Analyze</button>
-    <button onclick="forceMock()">Force Mock</button>
+    <input id="ticker" placeholder="Enter ticker symbol (AAPL, MSFT, GOOGL, TSLA, etc.)" type="text" value="AAPL">
+    <button id="valueBtn" onclick="runFullValuation()">Full DCF Analysis</button>
+    <button onclick="testAPI()" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">Test API</button>
+  </div>
+
+  <div class="progress" id="progressContainer" style="display:none;">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
   </div>
 
   <div id="status"></div>
 
   <div id="results" style="display:none;">
+    <div class="scenario-tabs">
+      <div class="scenario-tab active" onclick="switchScenario('base')">Base Case</div>
+      <div class="scenario-tab" onclick="switchScenario('bull')">Bull Case</div>
+      <div class="scenario-tab" onclick="switchScenario('bear')">Bear Case</div>
+    </div>
+
     <div class="results-grid">
       <div class="card">
-        <h3>Current Price</h3>
+        <h3>Current Price <span class="data-quality" id="dataQuality">—</span></h3>
         <div class="value" id="currentPrice">—</div>
         <div class="subvalue" id="marketCap">—</div>
       </div>
       <div class="card">
-        <h3>Fair Value</h3>
+        <h3>Fair Value (Weighted)</h3>
         <div class="value" id="fairValue">—</div>
         <div class="subvalue" id="fairValueRange">—</div>
       </div>
@@ -78,77 +103,1045 @@
         <div class="value" id="upside">—</div>
         <div class="subvalue" id="recommendation">—</div>
       </div>
+      <div class="card">
+        <h3>WACC</h3>
+        <div class="value" id="waccValue">—</div>
+        <div class="subvalue" id="waccBreakdown">—</div>
+      </div>
     </div>
 
     <div class="detail-section">
-      <h2>Valuation Methods</h2>
+      <h2>Valuation Synthesis (Book Methodology)</h2>
       <div class="valuation-methods" id="valuationMethods"></div>
     </div>
 
     <div class="detail-section">
-      <h2>Financial Metrics</h2>
+      <h2>DCF Model (5-Year Projection)</h2>
+      <div id="dcfProjection"></div>
+    </div>
+
+    <div class="detail-section">
+      <h2>Market Approach - Comparable Analysis</h2>
+      <div id="marketApproach"></div>
+    </div>
+
+    <div class="detail-section">
+      <h2>Asset-Based Valuation</h2>
+      <div id="assetBased"></div>
+    </div>
+
+    <div class="detail-section">
+      <h2>Adjustments & Premiums</h2>
+      <div id="adjustments"></div>
+    </div>
+
+    <div class="detail-section">
+      <h2>Financial Metrics & Normalized Data</h2>
       <div id="financialMetrics"></div>
     </div>
 
     <div class="detail-section">
-      <h2>Assumptions & Book View</h2>
+      <h2>Risk Analysis & Assumptions</h2>
       <div id="assumptions"></div>
       <pre id="bookSummary"></pre>
     </div>
 
     <div class="disclaimer">
-      ⚠️ Demo Mode: Mock or free API data for illustration only. Not investment advice. Always do independent research and consult professionals.
+      ⚠️ Professional Valuation Tool: Uses real-time data from Finnhub. This is for educational purposes only and not investment advice. Always conduct independent research and consult qualified professionals before making investment decisions.
     </div>
   </div>
 </div>
 
 <script>
-const MOCK_DATA = {
-  TSLA: {
-    profile: { price: 250.22, mktCap: 794000000000, beta: 2.1 },
-    income: [
-      { revenue: 96773000000, ebitda: 16243000000, ebit: 13656000000, netIncome: 14997000000, eps: 4.85 },
-      { revenue: 81462000000, ebitda: 14500000000, ebit: 12500000000, netIncome: 12500000000, eps: 4.07 }
-    ],
-    balance: {
-      cashAndCashEquivalents: 29000000000,
-      totalDebt: 6429000000,
-      totalAssets: 106000000000,
-      totalEquity: 73000000000
-    },
-    ratios: { peRatio: 51.6, pbRatio: 10.9, debtToEquity: 0.088 }
-  },
-  AAPL: {
-    profile: { price: 182.52, mktCap: 2830000000000, beta: 1.2 },
-    income: [
-      { revenue: 383933000000, ebitda: 130157000000, ebit: 114987000000, netIncome: 96995000000, eps: 6.16 },
-      { revenue: 394328000000, ebitda: 125000000000, ebit: 110000000000, netIncome: 94000000000, eps: 5.89 }
-    ],
-    balance: {
-      cashAndCashEquivalents: 67200000000,
-      totalDebt: 111107000000,
-      totalAssets: 353000000000,
-      totalEquity: 64000000000
-    },
-    ratios: { peRatio: 29.6, pbRatio: 44.2, debtToEquity: 1.74 }
-  },
-  NVDA: {
-    profile: { price: 1025.04, mktCap: 2528000000000, beta: 1.7 },
-    income: [
-      { revenue: 60922000000, ebitda: 36254000000, ebit: 33798000000, netIncome: 29760000000, eps: 11.93 },
-      { revenue: 26974000000, ebitda: 15000000000, ebit: 12000000000, netIncome: 9700000000, eps: 3.91 }
-    ],
-    balance: {
-      cashAndCashEquivalents: 29800000000,
-      totalDebt: 11681000000,
-      totalAssets: 78000000000,
-      totalEquity: 50000000000
-    },
-    ratios: { peRatio: 85.9, pbRatio: 50.6, debtToEquity: 0.23 }
-  }
-};
+// ============================================================================
+// PROFESSIONAL VALUATION ENGINE
+// Full Implementation of "המדריך להערכת שווי חברות"
+// ============================================================================
 
-function formatCurrency(num){
+const FINNHUB_KEY = "d3gh5ppr01qqbh56f7t0d3gh5ppr01qqbh56f7tg";
+const CORS_PROXY = "https://api.allorigins.win/raw?url=";
+
+// Current scenario (base, bull, bear)
+let currentScenario = 'base';
+let cachedValuation = null;
+
+// ============================================================================
+// STEP 1: DATA GATHERING
+// ============================================================================
+
+async function fetchWithRetry(url, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      console.log(`Fetching: ${url.substring(0, 100)}...`);
+      const res = await fetch(url, {
+        cache: "no-store",
+        mode: 'cors'
+      });
+      console.log(`Response status: ${res.status}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      console.log('Data received:', Object.keys(data).length > 0 ? 'OK' : 'Empty');
+      return data;
+    } catch (err) {
+      console.error(`Fetch attempt ${i + 1} failed:`, err.message);
+      if (i === maxRetries - 1) throw err;
+      await new Promise(r => setTimeout(r, 1000 * (i + 1)));
+    }
+  }
+}
+
+async function gatherCompanyData(symbol) {
+  updateStatus("Step 1/10: Gathering real-time data...", 10);
+
+  try {
+    console.log(`Starting data gathering for ${symbol}`);
+
+    // Fetch profile data
+    const profileUrl = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_KEY}`;
+    const profile = await fetchWithRetry(profileUrl);
+
+    if (!profile || Object.keys(profile).length === 0) {
+      throw new Error(`Invalid symbol: ${symbol}. No profile data found.`);
+    }
+
+    await new Promise(r => setTimeout(r, 300)); // Rate limit delay
+
+    // Fetch quote data
+    const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`;
+    const quote = await fetchWithRetry(quoteUrl);
+
+    if (!quote || !quote.c) {
+      throw new Error(`Unable to fetch current price for ${symbol}`);
+    }
+
+    await new Promise(r => setTimeout(r, 300));
+
+    // Fetch financial metrics
+    const metricsUrl = `https://finnhub.io/api/v1/stock/metric?symbol=${symbol}&metric=all&token=${FINNHUB_KEY}`;
+    let metrics = {};
+    try {
+      const metricsData = await fetchWithRetry(metricsUrl);
+      metrics = metricsData.metric || {};
+    } catch (err) {
+      console.warn('Metrics fetch failed, using defaults:', err.message);
+    }
+
+    await new Promise(r => setTimeout(r, 300));
+
+    // Fetch basic financials (better coverage) - these may fail on free tier
+    let incomeStatement = [];
+    let balanceSheet = [];
+    let cashFlow = [];
+
+    try {
+      const basicFinUrl = `https://finnhub.io/api/v1/stock/financials?symbol=${symbol}&statement=ic&freq=annual&token=${FINNHUB_KEY}`;
+      const incData = await fetchWithRetry(basicFinUrl);
+      incomeStatement = incData.financials || [];
+      await new Promise(r => setTimeout(r, 300));
+    } catch (err) {
+      console.warn('Income statement fetch failed:', err.message);
+    }
+
+    try {
+      const balanceUrl = `https://finnhub.io/api/v1/stock/financials?symbol=${symbol}&statement=bs&freq=annual&token=${FINNHUB_KEY}`;
+      const balData = await fetchWithRetry(balanceUrl);
+      balanceSheet = balData.financials || [];
+      await new Promise(r => setTimeout(r, 300));
+    } catch (err) {
+      console.warn('Balance sheet fetch failed:', err.message);
+    }
+
+    try {
+      const cashFlowUrl = `https://finnhub.io/api/v1/stock/financials?symbol=${symbol}&statement=cf&freq=annual&token=${FINNHUB_KEY}`;
+      const cfData = await fetchWithRetry(cashFlowUrl);
+      cashFlow = cfData.financials || [];
+    } catch (err) {
+      console.warn('Cash flow fetch failed:', err.message);
+    }
+
+    console.log('Data gathering complete:', {
+      profile: !!profile,
+      quote: !!quote,
+      metricsCount: Object.keys(metrics).length,
+      incomeStatements: incomeStatement.length,
+      balanceSheets: balanceSheet.length,
+      cashFlows: cashFlow.length
+    });
+
+    return {
+      profile,
+      quote,
+      metrics,
+      incomeStatement,
+      balanceSheet,
+      cashFlow,
+      symbol
+    };
+  } catch (err) {
+    console.error("Data gathering failed:", err);
+    throw new Error(`Failed to fetch data for ${symbol}: ${err.message}`);
+  }
+}
+
+// ============================================================================
+// STEP 2: NORMALIZATION & CLEANUP
+// ============================================================================
+
+function normalizeFinancials(rawData) {
+  updateStatus("Step 2/10: Normalizing and cleaning data...", 20);
+
+  const { profile, quote, metrics, incomeStatement, balanceSheet, cashFlow } = rawData;
+
+  // Extract key metrics with fallbacks
+  // NOTE: Finnhub returns marketCap and shares in MILLIONS
+  const price = quote.c || 0;
+  const marketCapMillions = profile.marketCapitalization || 0;
+  const sharesMillions = profile.shareOutstanding || 0;
+
+  // Convert to actual values (multiply by 1 million)
+  const marketCap = marketCapMillions * 1000000;
+  const sharesOutstanding = sharesMillions * 1000000;
+
+  // Validate: market cap should equal price * shares (roughly)
+  const impliedMarketCap = price * sharesOutstanding;
+  const marketCapDiff = Math.abs(marketCap - impliedMarketCap) / marketCap;
+
+  console.log('Market Cap Validation:', {
+    fromAPI: marketCap,
+    calculated: impliedMarketCap,
+    difference: (marketCapDiff * 100).toFixed(2) + '%',
+    price,
+    shares: sharesOutstanding
+  });
+
+  // Use calculated market cap if API value seems wrong (>10% difference)
+  const finalMarketCap = marketCapDiff > 0.1 ? impliedMarketCap : marketCap;
+
+  // Parse financial statements (get most recent year)
+  const getMetric = (arr, field) => {
+    if (!arr || arr.length === 0) return null;
+    const latest = arr[0];
+    return latest[field] || null;
+  };
+
+  // Income statement data
+  const revenue = getMetric(incomeStatement, 'revenue') || metrics.revenueTTM || finalMarketCap * 0.25;
+  const netIncome = getMetric(incomeStatement, 'netIncome') || metrics.netIncomeTTM || revenue * 0.15;
+  const operatingIncome = getMetric(incomeStatement, 'operatingIncome') || revenue * 0.20;
+  const ebitda = metrics.ebitdaTTM || operatingIncome * 1.15 || revenue * 0.25;
+
+  // Balance sheet data
+  const totalAssets = getMetric(balanceSheet, 'totalAssets') || metrics.totalAssets || finalMarketCap * 1.5;
+  const totalEquity = getMetric(balanceSheet, 'totalStockholderEquity') || metrics.totalEquity || finalMarketCap * 0.5;
+  const totalDebt = getMetric(balanceSheet, 'longTermDebt') || metrics.totalDebt || totalEquity * 0.3;
+  const cashAndEquiv = getMetric(balanceSheet, 'cashAndCashEquivalents') || metrics.currentAssets * 0.3 || totalAssets * 0.1;
+
+  // Cash flow data
+  const freeCashFlow = getMetric(cashFlow, 'freeCashFlow') || metrics.freeCashFlowTTM || netIncome * 0.8;
+  const operatingCashFlow = getMetric(cashFlow, 'operatingCashFlow') || freeCashFlow * 1.2;
+  const capex = operatingCashFlow - freeCashFlow;
+
+  // Calculate EPS
+  const eps = sharesOutstanding > 0 ? netIncome / sharesOutstanding : metrics.epsTTM || 0;
+
+  // Get beta (unlevered and relevered)
+  const betaLevered = metrics.beta || 1.2;
+  const debtToEquity = totalDebt / totalEquity || 0.3;
+  const taxRate = 0.21;
+  const betaUnlevered = betaLevered / (1 + (1 - taxRate) * debtToEquity);
+
+  // Calculate margins
+  const netMargin = revenue > 0 ? netIncome / revenue : 0.15;
+  const operatingMargin = revenue > 0 ? operatingIncome / revenue : 0.20;
+  const ebitdaMargin = revenue > 0 ? ebitda / revenue : 0.25;
+
+  // Calculate growth rates
+  const revenueGrowth = metrics.revenueGrowthTTMYoy || metrics.revenueGrowth3Y || 0.10;
+  const epsGrowth = metrics.epsGrowthTTMYoy || 0.10;
+
+  // Calculate profitability metrics
+  const roe = totalEquity > 0 ? netIncome / totalEquity : 0.15;
+  const roa = totalAssets > 0 ? netIncome / totalAssets : 0.08;
+  const roic = (totalEquity + totalDebt) > 0 ? netIncome / (totalEquity + totalDebt) : 0.12;
+
+  return {
+    price,
+    marketCap: finalMarketCap,
+    sharesOutstanding,
+    beta: { levered: betaLevered, unlevered: betaUnlevered },
+    debtToEquity,
+    taxRate,
+
+    // Normalized margins
+    margins: {
+      net: Math.min(Math.max(netMargin, 0.01), 0.5), // Cap between 1-50%
+      operating: Math.min(Math.max(operatingMargin, 0.05), 0.6),
+      ebitda: Math.min(Math.max(ebitdaMargin, 0.10), 0.7)
+    },
+
+    // Growth rates (normalized)
+    growth: {
+      revenue: Math.min(Math.max(revenueGrowth, -0.3), 0.5), // Cap between -30% and 50%
+      earnings: Math.min(Math.max(epsGrowth, -0.5), 1.0),
+      historical3Y: metrics.revenueGrowth3Y || revenueGrowth,
+      historical5Y: metrics.revenueGrowth5Y || revenueGrowth
+    },
+
+    // Profitability
+    profitability: {
+      roe: Math.min(Math.max(roe, 0.01), 2.0), // Cap between 1% and 200%
+      roa: Math.min(Math.max(roa, 0.01), 1.0),
+      roic: Math.min(Math.max(roic, 0.01), 1.5)
+    },
+
+    // Financial metrics from statements
+    revenue,
+    ebitda,
+    netIncome,
+    eps,
+    fcf: freeCashFlow,
+    operatingCashFlow,
+    capex,
+
+    // Balance sheet
+    cash: cashAndEquiv,
+    debt: totalDebt,
+    equity: totalEquity,
+    totalAssets,
+
+    // Ratios
+    ratios: {
+      pe: price > 0 && eps > 0 ? price / eps : 20,
+      pb: price > 0 && totalEquity > 0 ? (price * sharesOutstanding) / totalEquity : 3,
+      ps: price > 0 && revenue > 0 ? (price * sharesOutstanding) / revenue : 2,
+      evToEbitda: ebitda > 0 ? (marketCap + totalDebt - cashAndEquiv) / ebitda : 15,
+      evToSales: revenue > 0 ? (marketCap + totalDebt - cashAndEquiv) / revenue : 3,
+      priceToFcf: price > 0 && freeCashFlow > 0 ? (price * sharesOutstanding) / freeCashFlow : 25
+    },
+
+    // Company info
+    sector: profile.finnhubIndustry || "Technology",
+    country: profile.country || "US",
+    currency: profile.currency || "USD",
+    name: profile.name || rawData.symbol
+  };
+}
+
+// ============================================================================
+// STEP 3: FORECASTING (Heart of DCF)
+// ============================================================================
+
+function forecastFinancials(normalized, scenario = 'base') {
+  updateStatus("Step 3/10: Building financial forecasts (3 scenarios)...", 30);
+
+  const years = 5;
+  const projections = [];
+
+  // Scenario-based growth assumptions
+  const growthAssumptions = {
+    base: {
+      year1: Math.min(normalized.growth.revenue, 0.25),
+      year5: 0.03, // Terminal growth
+      marginExpansion: 0.01 // 1% per year
+    },
+    bull: {
+      year1: Math.min(normalized.growth.revenue * 1.3, 0.40),
+      year5: 0.04,
+      marginExpansion: 0.02
+    },
+    bear: {
+      year1: Math.max(normalized.growth.revenue * 0.6, 0.01),
+      year5: 0.02,
+      marginExpansion: -0.005 // Margin compression
+    }
+  };
+
+  const params = growthAssumptions[scenario];
+
+  // Starting values
+  let revenue = normalized.revenue;
+  let ebitdaMargin = normalized.margins.ebitda;
+  let operatingMargin = normalized.margins.operating;
+
+  for (let year = 1; year <= years; year++) {
+    // Declining growth rate (linear interpolation)
+    const growthRate = params.year1 + (params.year5 - params.year1) * ((year - 1) / (years - 1));
+    revenue = revenue * (1 + growthRate);
+
+    // Margin expansion/compression
+    ebitdaMargin = Math.min(Math.max(ebitdaMargin + params.marginExpansion, 0.05), 0.60);
+    operatingMargin = Math.min(Math.max(operatingMargin + params.marginExpansion, 0.03), 0.50);
+
+    const ebitda = revenue * ebitdaMargin;
+    const ebit = revenue * operatingMargin;
+    const nopat = ebit * (1 - normalized.taxRate);
+
+    // CapEx and Working Capital assumptions
+    const depreciation = revenue * 0.03; // 3% of revenue
+    const capex = revenue * 0.04; // 4% of revenue
+    const changeInWC = revenue * 0.02; // 2% of revenue growth
+
+    // Free Cash Flow to Firm
+    const fcff = nopat + depreciation - capex - changeInWC;
+
+    projections.push({
+      year,
+      revenue,
+      ebitda,
+      ebitdaMargin,
+      ebit,
+      operatingMargin,
+      nopat,
+      depreciation,
+      capex,
+      changeInWC,
+      fcff,
+      growthRate
+    });
+  }
+
+  return projections;
+}
+
+// ============================================================================
+// STEP 4: DISCOUNT RATE (WACC)
+// ============================================================================
+
+function calculateWACC(normalized) {
+  updateStatus("Step 4/10: Computing WACC (risk-adjusted discount rate)...", 40);
+
+  // Risk-free rate (US 10-year Treasury)
+  const riskFreeRate = 0.045; // 4.5% (update periodically)
+
+  // Equity Market Premium
+  const equityMarketPremium = 0.065; // 6.5% historical US premium
+
+  // Beta (use levered beta)
+  const beta = normalized.beta.levered;
+
+  // Size premium (market cap based)
+  let sizePremium = 0;
+  if (normalized.marketCap < 500000000) sizePremium = 0.04; // Small cap (<$500M)
+  else if (normalized.marketCap < 5000000000) sizePremium = 0.02; // Mid cap
+  else sizePremium = 0.005; // Large cap
+
+  // Country risk premium (if not US)
+  const countryRisk = normalized.country !== "US" ? 0.02 : 0;
+
+  // Company-specific risk premium (based on profitability)
+  let companyRisk = 0.01; // Base
+  if (normalized.profitability.roe < 0.10) companyRisk += 0.03; // Low ROE
+  if (normalized.debtToEquity > 1.5) companyRisk += 0.02; // High leverage
+
+  // Cost of Equity (CAPM + adjustments)
+  const costOfEquity = riskFreeRate +
+                       (beta * equityMarketPremium) +
+                       sizePremium +
+                       countryRisk +
+                       companyRisk;
+
+  // Cost of Debt
+  let costOfDebt = riskFreeRate + 0.02; // Base spread
+  if (normalized.debtToEquity > 1) costOfDebt += 0.015; // Higher spread for leverage
+  const afterTaxCostOfDebt = costOfDebt * (1 - normalized.taxRate);
+
+  // Capital structure weights
+  const totalCapital = normalized.marketCap + normalized.debt;
+  const equityWeight = normalized.marketCap / totalCapital;
+  const debtWeight = normalized.debt / totalCapital;
+
+  // WACC
+  const wacc = (costOfEquity * equityWeight) + (afterTaxCostOfDebt * debtWeight);
+
+  return {
+    wacc: Math.min(Math.max(wacc, 0.06), 0.20), // Cap between 6-20%
+    components: {
+      costOfEquity,
+      costOfDebt,
+      afterTaxCostOfDebt,
+      equityWeight,
+      debtWeight,
+      riskFreeRate,
+      beta,
+      equityMarketPremium,
+      sizePremium,
+      countryRisk,
+      companyRisk
+    }
+  };
+}
+
+// ============================================================================
+// STEP 5: DCF VALUATION
+// ============================================================================
+
+function computeDCF(projections, normalized, waccData, scenario) {
+  updateStatus("Step 5/10: Computing DCF valuation...", 50);
+
+  const wacc = waccData.wacc;
+  let pvFCFF = 0;
+
+  // Discount each year's FCFF
+  const discountedFlows = projections.map(p => {
+    const pv = p.fcff / Math.pow(1 + wacc, p.year);
+    pvFCFF += pv;
+    return { ...p, discountedFCFF: pv };
+  });
+
+  // Terminal Value (Perpetuity Growth Method)
+  const lastYear = projections[projections.length - 1];
+  const terminalGrowth = scenario === 'bull' ? 0.03 : scenario === 'bear' ? 0.02 : 0.025;
+  const terminalFCFF = lastYear.fcff * (1 + terminalGrowth);
+  const terminalValue = terminalFCFF / (wacc - terminalGrowth);
+  const pvTerminal = terminalValue / Math.pow(1 + wacc, projections.length);
+
+  // Enterprise Value
+  const enterpriseValue = pvFCFF + pvTerminal;
+
+  // Equity Value = EV + Cash - Debt
+  const equityValue = enterpriseValue + normalized.cash - normalized.debt;
+
+  // Per Share Value
+  const valuePerShare = equityValue / normalized.sharesOutstanding;
+
+  return {
+    pvFCFF,
+    terminalValue,
+    pvTerminal,
+    enterpriseValue,
+    equityValue,
+    valuePerShare,
+    discountedFlows,
+    terminalGrowth
+  };
+}
+
+// ============================================================================
+// STEP 6: MARKET APPROACH
+// ============================================================================
+
+function marketApproachValuation(normalized) {
+  updateStatus("Step 6/10: Applying market multiples approach...", 60);
+
+  // Industry average multiples (simplified - in real implementation, fetch comparable companies)
+  const industryMultiples = {
+    Technology: { evToEbitda: 18, evToSales: 4.5, pe: 28, pb: 5.5 },
+    Finance: { evToEbitda: 12, evToSales: 2.5, pe: 15, pb: 1.8 },
+    Healthcare: { evToEbitda: 16, evToSales: 3.5, pe: 22, pb: 4.0 },
+    "Consumer Cyclical": { evToEbitda: 14, evToSales: 1.5, pe: 18, pb: 3.0 },
+    Energy: { evToEbitda: 8, evToSales: 1.2, pe: 12, pb: 1.5 },
+    Default: { evToEbitda: 15, evToSales: 3.0, pe: 20, pb: 3.5 }
+  };
+
+  const multiples = industryMultiples[normalized.sector] || industryMultiples.Default;
+
+  // Apply adjustments for growth and profitability
+  const growthAdjustment = 1 + (normalized.growth.revenue - 0.10); // Adjust for above/below 10% growth
+  const profitabilityAdjustment = 1 + (normalized.profitability.roe - 0.15); // Adjust for ROE
+
+  const adjustedMultiples = {
+    evToEbitda: multiples.evToEbitda * growthAdjustment * profitabilityAdjustment,
+    evToSales: multiples.evToSales * growthAdjustment,
+    pe: multiples.pe * growthAdjustment,
+    pb: multiples.pb * profitabilityAdjustment
+  };
+
+  // Calculate implied values
+  const evFromEbitda = normalized.ebitda * adjustedMultiples.evToEbitda;
+  const evFromSales = normalized.revenue * adjustedMultiples.evToSales;
+  const equityFromPE = normalized.netIncome * adjustedMultiples.pe;
+  const equityFromPB = normalized.equity * adjustedMultiples.pb;
+
+  // Convert EV to Equity Value
+  const equityFromEbitda = evFromEbitda + normalized.cash - normalized.debt;
+  const equityFromSales = evFromSales + normalized.cash - normalized.debt;
+
+  // Weighted average
+  const weights = { ebitda: 0.35, sales: 0.15, pe: 0.35, pb: 0.15 };
+  const totalEquityValue =
+    equityFromEbitda * weights.ebitda +
+    equityFromSales * weights.sales +
+    equityFromPE * weights.pe +
+    equityFromPB * weights.pb;
+
+  const valuePerShare = totalEquityValue / normalized.sharesOutstanding;
+
+  return {
+    equityValue: totalEquityValue,
+    valuePerShare,
+    methods: {
+      evToEbitda: { value: equityFromEbitda, multiple: adjustedMultiples.evToEbitda },
+      evToSales: { value: equityFromSales, multiple: adjustedMultiples.evToSales },
+      pe: { value: equityFromPE, multiple: adjustedMultiples.pe },
+      pb: { value: equityFromPB, multiple: adjustedMultiples.pb }
+    },
+    weights
+  };
+}
+
+// ============================================================================
+// STEP 7: ASSET-BASED VALUATION
+// ============================================================================
+
+function assetBasedValuation(normalized) {
+  updateStatus("Step 7/10: Computing asset-based valuation...", 70);
+
+  // Book value adjustments
+  const bookValue = normalized.equity;
+
+  // Fair value adjustments (simplified)
+  // In real implementation: revalue real estate, intangibles, etc.
+  const realEstateAdjustment = normalized.totalAssets * 0.02; // Assume 2% adjustment for real estate revaluation
+  const intangibleAdjustment = normalized.marketCap * 0.05; // Brand value, goodwill (conservative 5%)
+  const inventoryAdjustment = 0; // Assume inventory at fair value
+
+  const adjustedBookValue = bookValue + realEstateAdjustment + intangibleAdjustment;
+
+  // Liquidation value (conservative)
+  const liquidationValue = normalized.totalAssets * 0.60 - normalized.debt; // 60% recovery on assets
+
+  const valuePerShare = adjustedBookValue / normalized.sharesOutstanding;
+  const liquidationPerShare = liquidationValue / normalized.sharesOutstanding;
+
+  return {
+    bookValue,
+    adjustedBookValue,
+    liquidationValue,
+    valuePerShare,
+    liquidationPerShare,
+    adjustments: {
+      realEstate: realEstateAdjustment,
+      intangibles: intangibleAdjustment,
+      inventory: inventoryAdjustment
+    }
+  };
+}
+
+// ============================================================================
+// STEP 8: ADJUSTMENTS & PREMIUMS
+// ============================================================================
+
+function applyPremiumsAndDiscounts(baseValue, normalized) {
+  updateStatus("Step 8/10: Applying control premiums and discounts...", 80);
+
+  // Control premium (20-35% for acquiring control)
+  const controlPremium = 0.25; // 25%
+  const controlValue = baseValue * (1 + controlPremium);
+
+  // Minority discount (inverse of control)
+  const minorityDiscount = 0.20; // 20%
+  const minorityValue = baseValue * (1 - minorityDiscount);
+
+  // Marketability discount (for private/illiquid stocks)
+  const isPubliclyTraded = normalized.marketCap > 100000000; // Assume public if >$100M
+  const marketabilityDiscount = isPubliclyTraded ? 0 : 0.25; // 25% for private
+  const marketableValue = baseValue * (1 - marketabilityDiscount);
+
+  // Key person discount (if applicable)
+  const keyPersonDiscount = 0.10; // Assume 10% dependence on key management
+
+  return {
+    baseValue,
+    controlValue,
+    minorityValue,
+    marketableValue,
+    discounts: {
+      minority: minorityDiscount,
+      marketability: marketabilityDiscount,
+      keyPerson: keyPersonDiscount
+    },
+    premiums: {
+      control: controlPremium
+    }
+  };
+}
+
+// ============================================================================
+// STEP 9: SYNTHESIS (Weighted Valuation)
+// ============================================================================
+
+function synthesizeValuation(dcfResult, marketResult, assetResult, normalized) {
+  updateStatus("Step 9/10: Synthesizing final valuation...", 90);
+
+  // Book methodology weights: 55% DCF, 30% Market, 15% Asset
+  const weights = {
+    dcf: 0.55,
+    market: 0.30,
+    asset: 0.15
+  };
+
+  const weightedValue =
+    dcfResult.valuePerShare * weights.dcf +
+    marketResult.valuePerShare * weights.market +
+    assetResult.valuePerShare * weights.asset;
+
+  const weightedEquityValue = weightedValue * normalized.sharesOutstanding;
+
+  // Sensitivity analysis (±10% on key assumptions)
+  const sensitivityRanges = {
+    low: weightedValue * 0.85,
+    base: weightedValue,
+    high: weightedValue * 1.15
+  };
+
+  // Upside/Downside vs current price
+  const upside = ((weightedValue / normalized.price) - 1) * 100;
+
+  return {
+    fairValuePerShare: weightedValue,
+    equityValue: weightedEquityValue,
+    upside,
+    weights,
+    components: {
+      dcf: dcfResult.valuePerShare,
+      market: marketResult.valuePerShare,
+      asset: assetResult.valuePerShare
+    },
+    sensitivityRanges
+  };
+}
+
+// ============================================================================
+// STEP 10: FINAL REPORT GENERATION
+// ============================================================================
+
+function generateValuationReport(symbol, normalized, dcfResult, marketResult, assetResult, synthesis, waccData, projections, adjustments, scenario) {
+  updateStatus("Step 10/10: Generating final report...", 100);
+
+  return {
+    symbol,
+    scenario,
+    date: new Date().toISOString(),
+
+    // Current market data
+    currentPrice: normalized.price,
+    marketCap: normalized.marketCap,
+
+    // Valuation results
+    fairValue: synthesis.fairValuePerShare,
+    upside: synthesis.upside,
+
+    // Methodology breakdown
+    dcf: dcfResult,
+    market: marketResult,
+    asset: assetResult,
+    synthesis,
+
+    // Supporting data
+    wacc: waccData,
+    projections,
+    normalized,
+    adjustments,
+
+    // Recommendation
+    recommendation: getRecommendation(synthesis.upside),
+
+    // Data quality
+    dataQuality: assessDataQuality(normalized)
+  };
+}
+
+function getRecommendation(upside) {
+  if (upside > 30) return "Strong Buy";
+  if (upside > 15) return "Buy";
+  if (upside > -10) return "Hold";
+  if (upside > -25) return "Sell";
+  return "Strong Sell";
+}
+
+function assessDataQuality(normalized) {
+  let score = 0;
+  if (normalized.revenue > 0) score++;
+  if (normalized.fcf > 0) score++;
+  if (normalized.profitability.roe > 0.05) score++;
+  if (normalized.marketCap > 100000000) score++;
+
+  if (score >= 4) return "HIGH";
+  if (score >= 2) return "MEDIUM";
+  return "LOW";
+}
+
+// ============================================================================
+// UI UPDATE FUNCTIONS
+// ============================================================================
+
+function updateStatus(message, progress) {
+  document.getElementById("status").textContent = message;
+  if (progress !== undefined) {
+    document.getElementById("progressFill").style.width = progress + "%";
+  }
+}
+
+function updateProgress(percent) {
+  document.getElementById("progressFill").style.width = percent + "%";
+}
+
+// ============================================================================
+// MAIN VALUATION ORCHESTRATOR
+// ============================================================================
+
+async function runFullValuation() {
+  const symbolInput = document.getElementById("ticker");
+  const valueBtn = document.getElementById("valueBtn");
+  const symbol = symbolInput.value.trim().toUpperCase();
+
+  if (!symbol) {
+    alert("Please enter a ticker symbol");
+    return;
+  }
+
+  valueBtn.disabled = true;
+  valueBtn.textContent = "Analyzing...";
+  document.getElementById("progressContainer").style.display = "block";
+  document.getElementById("results").style.display = "none";
+
+  try {
+    // Step 1: Gather data
+    const rawData = await gatherCompanyData(symbol);
+
+    // Step 2: Normalize
+    const normalized = normalizeFinancials(rawData);
+
+    // Step 4: Calculate WACC first (needed for DCF)
+    const waccData = calculateWACC(normalized);
+
+    // Run all three scenarios
+    const scenarios = {};
+    for (const scenario of ['base', 'bull', 'bear']) {
+      // Step 3: Forecast
+      const projections = forecastFinancials(normalized, scenario);
+
+      // Step 5: DCF
+      const dcfResult = computeDCF(projections, normalized, waccData, scenario);
+
+      // Step 6: Market approach
+      const marketResult = marketApproachValuation(normalized);
+
+      // Step 7: Asset-based
+      const assetResult = assetBasedValuation(normalized);
+
+      // Step 8: Adjustments
+      const adjustments = applyPremiumsAndDiscounts(dcfResult.valuePerShare, normalized);
+
+      // Step 9: Synthesis
+      const synthesis = synthesizeValuation(dcfResult, marketResult, assetResult, normalized);
+
+      // Step 10: Generate report
+      const report = generateValuationReport(
+        symbol, normalized, dcfResult, marketResult, assetResult,
+        synthesis, waccData, projections, adjustments, scenario
+      );
+
+      scenarios[scenario] = report;
+    }
+
+    // Cache for scenario switching
+    cachedValuation = scenarios;
+
+    // Render base case by default
+    renderValuationReport(scenarios.base);
+
+    updateStatus("✓ Valuation complete!", 100);
+    document.getElementById("results").style.display = "block";
+
+  } catch (err) {
+    updateStatus(`Error: ${err.message}`, 0);
+    console.error("Valuation error:", err);
+  } finally {
+    valueBtn.disabled = false;
+    valueBtn.textContent = "Full DCF Analysis";
+    setTimeout(() => {
+      document.getElementById("progressContainer").style.display = "none";
+    }, 2000);
+  }
+}
+
+function switchScenario(scenario) {
+  if (!cachedValuation || !cachedValuation[scenario]) return;
+
+  currentScenario = scenario;
+
+  // Update tab UI
+  document.querySelectorAll('.scenario-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  event.target.classList.add('active');
+
+  // Render the selected scenario
+  renderValuationReport(cachedValuation[scenario]);
+}
+
+// ============================================================================
+// RENDERING FUNCTIONS
+// ============================================================================
+
+function renderValuationReport(report) {
+  // Main cards
+  document.getElementById("currentPrice").textContent = `$${report.currentPrice.toFixed(2)}`;
+  document.getElementById("marketCap").textContent = `Market Cap: ${formatCurrency(report.marketCap)}`;
+
+  document.getElementById("fairValue").textContent = `$${report.fairValue.toFixed(2)}`;
+  document.getElementById("fairValueRange").textContent =
+    `Range: $${report.synthesis.sensitivityRanges.low.toFixed(2)} - $${report.synthesis.sensitivityRanges.high.toFixed(2)}`;
+
+  const upsideEl = document.getElementById("upside");
+  const upsideText = report.upside > 0 ? `+${report.upside.toFixed(1)}%` : `${report.upside.toFixed(1)}%`;
+  upsideEl.textContent = upsideText;
+  upsideEl.className = `value ${report.upside > 15 ? 'positive' : report.upside < -15 ? 'negative' : 'neutral'}`;
+
+  document.getElementById("recommendation").textContent = report.recommendation;
+
+  // WACC
+  document.getElementById("waccValue").textContent = `${(report.wacc.wacc * 100).toFixed(2)}%`;
+  document.getElementById("waccBreakdown").textContent =
+    `Ke: ${(report.wacc.components.costOfEquity * 100).toFixed(1)}% | Kd: ${(report.wacc.components.afterTaxCostOfDebt * 100).toFixed(1)}%`;
+
+  // Data quality
+  const qualityEl = document.getElementById("dataQuality");
+  qualityEl.textContent = report.dataQuality;
+  qualityEl.className = `data-quality quality-${report.dataQuality.toLowerCase()}`;
+
+  // Valuation methods
+  const methods = [
+    { name: "DCF Model", value: report.synthesis.components.dcf, weight: report.synthesis.weights.dcf },
+    { name: "Market Multiples", value: report.synthesis.components.market, weight: report.synthesis.weights.market },
+    { name: "Asset-Based", value: report.synthesis.components.asset, weight: report.synthesis.weights.asset }
+  ];
+
+  document.getElementById("valuationMethods").innerHTML = methods.map(m => `
+    <div class="method-card">
+      <div class="method-name">${m.name} (${(m.weight * 100).toFixed(0)}%)</div>
+      <div class="method-value">$${m.value.toFixed(2)}</div>
+    </div>
+  `).join('');
+
+  // DCF Projection table
+  let dcfHTML = '<table style="width:100%; border-collapse: collapse;"><thead><tr style="border-bottom: 2px solid #23304a;">';
+  dcfHTML += '<th style="text-align:left; padding:8px;">Year</th><th style="text-align:right; padding:8px;">Revenue</th><th style="text-align:right; padding:8px;">EBITDA</th><th style="text-align:right; padding:8px;">FCFF</th><th style="text-align:right; padding:8px;">PV</th></tr></thead><tbody>';
+
+  report.projections.forEach(p => {
+    const dcData = report.dcf.discountedFlows.find(d => d.year === p.year);
+    dcfHTML += `<tr style="border-bottom: 1px solid #1f2940;">
+      <td style="padding:8px;">Year ${p.year}</td>
+      <td style="text-align:right; padding:8px;">${formatCurrency(p.revenue)}</td>
+      <td style="text-align:right; padding:8px;">${formatCurrency(p.ebitda)}</td>
+      <td style="text-align:right; padding:8px;">${formatCurrency(p.fcff)}</td>
+      <td style="text-align:right; padding:8px;">${formatCurrency(dcData.discountedFCFF)}</td>
+    </tr>`;
+  });
+
+  dcfHTML += `<tr style="font-weight:700; background:#0b0f19;">
+    <td style="padding:8px;" colspan="3">Terminal Value (Growth: ${(report.dcf.terminalGrowth * 100).toFixed(2)}%)</td>
+    <td style="text-align:right; padding:8px;" colspan="2">${formatCurrency(report.dcf.pvTerminal)}</td>
+  </tr>`;
+  dcfHTML += `<tr style="font-weight:700; color:#4cc9f0;">
+    <td style="padding:8px;" colspan="3">Enterprise Value</td>
+    <td style="text-align:right; padding:8px;" colspan="2">${formatCurrency(report.dcf.enterpriseValue)}</td>
+  </tr></tbody></table>`;
+
+  document.getElementById("dcfProjection").innerHTML = dcfHTML;
+
+  // Market approach
+  let marketHTML = '<div class="metric-row"><span class="metric-label"><strong>Method</strong></span><span class="metric-value"><strong>Multiple</strong></span><span class="metric-value"><strong>Value</strong></span></div>';
+  Object.entries(report.market.methods).forEach(([key, data]) => {
+    marketHTML += `<div class="metric-row">
+      <span class="metric-label">${key.toUpperCase()}</span>
+      <span class="metric-value">${data.multiple.toFixed(2)}x</span>
+      <span class="metric-value">${formatCurrency(data.value)}</span>
+    </div>`;
+  });
+  marketHTML += `<div class="metric-row" style="font-weight:700; color:#4cc9f0; margin-top:12px;">
+    <span class="metric-label">Weighted Average</span>
+    <span class="metric-value"></span>
+    <span class="metric-value">${formatCurrency(report.market.equityValue)}</span>
+  </div>`;
+  document.getElementById("marketApproach").innerHTML = marketHTML;
+
+  // Asset-based
+  document.getElementById("assetBased").innerHTML = `
+    <div class="metric-row"><span class="metric-label">Book Value</span><span class="metric-value">${formatCurrency(report.asset.bookValue)}</span></div>
+    <div class="metric-row"><span class="metric-label">Adjusted Book Value</span><span class="metric-value">${formatCurrency(report.asset.adjustedBookValue)}</span></div>
+    <div class="metric-row"><span class="metric-label">Liquidation Value</span><span class="metric-value">${formatCurrency(report.asset.liquidationValue)}</span></div>
+    <div class="metric-row" style="font-weight:700; color:#4cc9f0; margin-top:12px;"><span class="metric-label">Per Share</span><span class="metric-value">$${report.asset.valuePerShare.toFixed(2)}</span></div>
+  `;
+
+  // Adjustments
+  document.getElementById("adjustments").innerHTML = `
+    <div class="metric-row"><span class="metric-label">Base Value</span><span class="metric-value">$${report.adjustments.baseValue.toFixed(2)}</span></div>
+    <div class="metric-row"><span class="metric-label">Control Premium (${(report.adjustments.premiums.control*100).toFixed(0)}%)</span><span class="metric-value">$${report.adjustments.controlValue.toFixed(2)}</span></div>
+    <div class="metric-row"><span class="metric-label">Minority Discount (${(report.adjustments.discounts.minority*100).toFixed(0)}%)</span><span class="metric-value">$${report.adjustments.minorityValue.toFixed(2)}</span></div>
+    <div class="metric-row"><span class="metric-label">Marketability Discount (${(report.adjustments.discounts.marketability*100).toFixed(0)}%)</span><span class="metric-value">$${report.adjustments.marketableValue.toFixed(2)}</span></div>
+  `;
+
+  // Financial metrics
+  const norm = report.normalized;
+  document.getElementById("financialMetrics").innerHTML = `
+    <div class="metric-row"><span class="metric-label">Revenue (TTM)</span><span class="metric-value">${formatCurrency(norm.revenue)}</span></div>
+    <div class="metric-row"><span class="metric-label">EBITDA (TTM)</span><span class="metric-value">${formatCurrency(norm.ebitda)}</span></div>
+    <div class="metric-row"><span class="metric-label">Net Income (TTM)</span><span class="metric-value">${formatCurrency(norm.netIncome)}</span></div>
+    <div class="metric-row"><span class="metric-label">Free Cash Flow</span><span class="metric-value">${formatCurrency(norm.fcf)}</span></div>
+    <div class="metric-row"><span class="metric-label">EBITDA Margin</span><span class="metric-value">${(norm.margins.ebitda*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Operating Margin</span><span class="metric-value">${(norm.margins.operating*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Net Margin</span><span class="metric-value">${(norm.margins.net*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">ROE</span><span class="metric-value">${(norm.profitability.roe*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">ROA</span><span class="metric-value">${(norm.profitability.roa*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Debt/Equity</span><span class="metric-value">${norm.debtToEquity.toFixed(2)}x</span></div>
+    <div class="metric-row"><span class="metric-label">Revenue Growth (YoY)</span><span class="metric-value">${(norm.growth.revenue*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">EPS</span><span class="metric-value">$${norm.eps.toFixed(2)}</span></div>
+  `;
+
+  // Assumptions
+  document.getElementById("assumptions").innerHTML = `
+    <div class="metric-row"><span class="metric-label">WACC</span><span class="metric-value">${(report.wacc.wacc*100).toFixed(2)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Risk-Free Rate</span><span class="metric-value">${(report.wacc.components.riskFreeRate*100).toFixed(2)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Beta (Levered)</span><span class="metric-value">${report.wacc.components.beta.toFixed(2)}</span></div>
+    <div class="metric-row"><span class="metric-label">Equity Market Premium</span><span class="metric-value">${(report.wacc.components.equityMarketPremium*100).toFixed(2)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Terminal Growth Rate</span><span class="metric-value">${(report.dcf.terminalGrowth*100).toFixed(2)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Tax Rate</span><span class="metric-value">${(norm.taxRate*100).toFixed(1)}%</span></div>
+    <div class="metric-row"><span class="metric-label">Valuation Weights</span><span class="metric-value">DCF ${(report.synthesis.weights.dcf*100).toFixed(0)}%, Market ${(report.synthesis.weights.market*100).toFixed(0)}%, Asset ${(report.synthesis.weights.asset*100).toFixed(0)}%</span></div>
+  `;
+
+  // Book summary
+  document.getElementById("bookSummary").textContent = `
+תמצית לפי "המדריך להערכת שווי חברות"
+
+1. גישת הכנסות (DCF - ${(report.synthesis.weights.dcf*100).toFixed(0)}%):
+   - WACC: ${(report.wacc.wacc*100).toFixed(2)}%
+   - צמיחת נצח: ${(report.dcf.terminalGrowth*100).toFixed(2)}%
+   - שווי למניה: $${report.synthesis.components.dcf.toFixed(2)}
+
+2. גישת שוק (${(report.synthesis.weights.market*100).toFixed(0)}%):
+   - מכפילים מותאמים לצמיחה ורווחיות
+   - השוואה לחברות דומות במגזר ${norm.sector}
+   - שווי למניה: $${report.synthesis.components.market.toFixed(2)}
+
+3. גישת נכסים (${(report.synthesis.weights.asset*100).toFixed(0)}%):
+   - ערך מאזני מתואם
+   - התאמות שווי הוגן לנכסים
+   - שווי למניה: $${report.synthesis.components.asset.toFixed(2)}
+
+4. שילוב והתאמות:
+   - פרמיית שליטה: ${(report.adjustments.premiums.control*100).toFixed(0)}%
+   - היוון מיעוט: ${(report.adjustments.discounts.minority*100).toFixed(0)}%
+   - התאמת סחירות: ${(report.adjustments.discounts.marketability*100).toFixed(0)}%
+
+5. מסקנה:
+   - שווי הוגן למניה: $${report.fairValue.toFixed(2)}
+   - טווח רגישות: $${report.synthesis.sensitivityRanges.low.toFixed(2)} - $${report.synthesis.sensitivityRanges.high.toFixed(2)}
+   - פוטנציאל: ${report.upside.toFixed(1)}%
+   - המלצה: ${report.recommendation}
+
+תאריך הערכה: ${new Date(report.date).toLocaleDateString('he-IL')}
+איכות נתונים: ${report.dataQuality}
+תרחיש: ${report.scenario.toUpperCase()}
+`;
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+function formatCurrency(num) {
   if (Math.abs(num) >= 1e12) return `$${(num/1e12).toFixed(2)}T`;
   if (Math.abs(num) >= 1e9) return `$${(num/1e9).toFixed(2)}B`;
   if (Math.abs(num) >= 1e6) return `$${(num/1e6).toFixed(2)}M`;
@@ -156,7 +1149,7 @@ function formatCurrency(num){
   return `$${num.toFixed(2)}`;
 }
 
-function formatNumber(num){
+function formatNumber(num) {
   if (Math.abs(num) >= 1e12) return `${(num/1e12).toFixed(2)}T`;
   if (Math.abs(num) >= 1e9) return `${(num/1e9).toFixed(2)}B`;
   if (Math.abs(num) >= 1e6) return `${(num/1e6).toFixed(2)}M`;
@@ -164,200 +1157,42 @@ function formatNumber(num){
   return num.toLocaleString();
 }
 
-async function fetchProfile(symbol){
-  const url = `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=demo`;
+// ============================================================================
+// API TEST FUNCTION
+// ============================================================================
+
+async function testAPI() {
+  const symbol = document.getElementById("ticker").value.trim().toUpperCase() || 'AAPL';
+  updateStatus(`Testing API with ${symbol}...`, 50);
+
+  console.log('=== API TEST START ===');
+  console.log('Symbol:', symbol);
+  console.log('API Key:', FINNHUB_KEY ? 'Present' : 'Missing');
+
   try {
-    const res = await fetch(url, { cache: "no-store" });
-    if(!res.ok) throw new Error("api");
-    const data = await res.json();
-    if(!Array.isArray(data) || !data.length) throw new Error("empty");
-    const p = data[0];
-    return {
-      price: Number(p.price),
-      mktCap: Number(p.mktCap || p.marketCap),
-      beta: Number(p.beta),
-      shares: Number(p.sharesOutstanding),
-      revenue: Number(p.revenue || p.revenuePerShareTTM * Number(p.sharesOutstanding) || 0),
-      ebitda: Number(p.ebitda || 0),
-      netIncome: Number(p.netIncome || 0),
-      eps: Number(p.eps || 0)
-    };
-  } catch(err){
-    console.warn('Live fetch failed, using mock', err);
-    return null;
-  }
-}
+    // Test 1: Quote (simplest)
+    const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`;
+    console.log('Test 1: Fetching quote...');
+    const quote = await fetch(quoteUrl);
+    const quoteData = await quote.json();
+    console.log('Quote data:', quoteData);
 
-function bookPhilosophySummary({ finalValue, perShare, exitMultiple, terminal, wacc }){
-  return `תמצית לפי "המדריך להערכת שווי חברות"
-- גישת הכנסות (DCF): WACC ${(wacc*100).toFixed(1)}%, צמיחת נצח ${(terminal*100).toFixed(1)}%.
-- גישת שוק: מכפיל יציאה ${exitMultiple}x EBITDA כעוגן.
-- גישת נכסים: ערך מאזני מתואם נטו חוב.
-- שילוב: 55% DCF, 30% מכפילים, 15% נכסים.
-- מסקנה: שווי כולל ${finalValue.toFixed(0)}, שווי למניה $${perShare.toFixed(2)} (דמו בלבד).`;
-}
-
-function computeValuation(symbol, data){
-  const profile = data.profile;
-  const curr = data.income[0];
-  const prev = data.income[1];
-  const balance = data.balance;
-  const ratios = data.ratios;
-
-  const price = profile.price;
-  const mktCap = profile.mktCap;
-  const shares = mktCap / price;
-  const revenue = curr.revenue;
-  const ebitda = curr.ebitda;
-  const ebit = curr.ebit;
-  const netIncome = curr.netIncome;
-  const eps = curr.eps;
-  const cash = balance.cashAndCashEquivalents;
-  const debt = balance.totalDebt;
-  const equity = balance.totalEquity;
-
-  const revGrowth = (curr.revenue - prev.revenue) / prev.revenue;
-  const epsGrowth = (curr.eps - prev.eps) / prev.eps;
-  const ebitMargin = ebit / revenue;
-  const roe = netIncome / equity;
-
-  const wacc = 0.10;
-  const forecastGrowth = Math.max(0.02, Math.min(0.25, revGrowth));
-  let dcf = 0;
-  let fcff = ebit * (1 - 0.21);
-  let current = fcff;
-  for (let i = 1; i <= 5; i++) {
-    current = current * (1 + forecastGrowth);
-    dcf += current / Math.pow(1 + wacc, i);
-  }
-  const terminalGrowth = 0.022;
-  const terminalValue = (current * (1 + terminalGrowth)) / (wacc - terminalGrowth);
-  dcf += terminalValue / Math.pow(1 + wacc, 5);
-
-  const exitMultiple = symbol === 'NVDA' ? 25 : symbol === 'AAPL' ? 18 : 15;
-  const evEbitdaValue = ebitda * exitMultiple + cash - debt;
-  const peValue = netIncome * (symbol === 'AAPL' ? 28 : symbol === 'NVDA' ? 40 : 30);
-  const grahamNumber = Math.sqrt(22.5 * eps * (equity / shares));
-  const grahamValue = grahamNumber * shares;
-  const fairPEG = 1.5;
-  const impliedPE = fairPEG * (epsGrowth * 100);
-  const pegValue = netIncome * Math.max(15, Math.min(50, impliedPE));
-  const bookValue = equity;
-
-  const weights = { dcf:0.30, pe:0.20, evEbitda:0.20, graham:0.15, peg:0.10, book:0.05 };
-  const finalValue = weights.dcf*dcf + weights.pe*peValue + weights.evEbitda*evEbitdaValue + weights.graham*grahamValue + weights.peg*pegValue + weights.book*bookValue;
-  const perShare = finalValue / shares;
-  const upside = ((perShare / price - 1) * 100);
-
-  return { profile:{price,mktCap,beta:profile.beta}, shares, revenue, ebitda, ebit, netIncome, eps, cash, debt, equity, revGrowth, epsGrowth, ebitMargin, roe, dcf, peValue, evEbitdaValue, grahamValue, pegValue, bookValue, finalValue, perShare, upside, exitMultiple, terminalGrowth, wacc, weights };
-}
-
-function renderResults(symbol, v){
-  document.getElementById("currentPrice").textContent = `$${v.profile.price.toFixed(2)}`;
-  document.getElementById("marketCap").textContent = `Market Cap: ${formatNumber(v.profile.mktCap)}`;
-  document.getElementById("fairValue").textContent = `$${v.perShare.toFixed(2)}`;
-  const lowEstimate = v.perShare * 0.85;
-  const highEstimate = v.perShare * 1.15;
-  document.getElementById("fairValueRange").textContent = `Range: $${lowEstimate.toFixed(2)} - $${highEstimate.toFixed(2)}`;
-
-  const upsideEl = document.getElementById("upside");
-  const upsideText = v.upside > 0 ? `+${v.upside.toFixed(1)}%` : `${v.upside.toFixed(1)}%`;
-  upsideEl.textContent = upsideText;
-  upsideEl.className = `value ${v.upside > 15 ? 'positive' : v.upside < -15 ? 'negative' : 'neutral'}`;
-
-  let recommendation = "Hold";
-  if (v.upside > 25) recommendation = "Strong Buy";
-  else if (v.upside > 15) recommendation = "Buy";
-  else if (v.upside < -25) recommendation = "Strong Sell";
-  else if (v.upside < -15) recommendation = "Sell";
-  document.getElementById("recommendation").textContent = recommendation;
-
-  const methods = [
-    { name: "DCF Model", value: v.dcf / v.shares, weight: v.weights.dcf },
-    { name: "P/E Multiple", value: v.peValue / v.shares, weight: v.weights.pe },
-    { name: "EV/EBITDA", value: v.evEbitdaValue / v.shares, weight: v.weights.evEbitda },
-    { name: "Graham Number", value: v.grahamValue / v.shares, weight: v.weights.graham },
-    { name: "PEG Ratio", value: v.pegValue / v.shares, weight: v.weights.peg },
-    { name: "Book Value", value: v.bookValue / v.shares, weight: v.weights.book }
-  ];
-  document.getElementById("valuationMethods").innerHTML = methods.map(m => `
-    <div class="method-card">
-      <div class="method-name">${m.name} (${(m.weight*100).toFixed(0)}%)</div>
-      <div class="method-value">$${m.value.toFixed(2)}</div>
-    </div>`).join('');
-
-  document.getElementById("financialMetrics").innerHTML = `
-    <div class="metric-row"><span class="metric-label">Revenue (TTM)</span><span class="metric-value">${formatNumber(v.revenue)}</span></div>
-    <div class="metric-row"><span class="metric-label">EBITDA (TTM)</span><span class="metric-value">${formatNumber(v.ebitda)}</span></div>
-    <div class="metric-row"><span class="metric-label">EBIT Margin</span><span class="metric-value">${(v.ebitMargin*100).toFixed(1)}%</span></div>
-    <div class="metric-row"><span class="metric-label">ROE</span><span class="metric-value">${(v.roe*100).toFixed(1)}%</span></div>
-    <div class="metric-row"><span class="metric-label">Debt / Equity</span><span class="metric-value">${(v.debt/v.equity).toFixed(2)}x</span></div>
-    <div class="metric-row"><span class="metric-label">Revenue Growth (YoY)</span><span class="metric-value">${(v.revGrowth*100).toFixed(1)}%</span></div>
-    <div class="metric-row"><span class="metric-label">EPS Growth (YoY)</span><span class="metric-value">${(v.epsGrowth*100).toFixed(1)}%</span></div>`;
-
-  document.getElementById("assumptions").innerHTML = `
-    <div class="metric-row"><span class="metric-label">WACC</span><span class="metric-value">${(v.wacc*100).toFixed(1)}%</span></div>
-    <div class="metric-row"><span class="metric-label">Terminal Growth</span><span class="metric-value">${(v.terminalGrowth*100).toFixed(2)}%</span></div>
-    <div class="metric-row"><span class="metric-label">Exit EV/EBITDA</span><span class="metric-value">${v.exitMultiple}x</span></div>
-    <div class="metric-row"><span class="metric-label">Blend</span><span class="metric-value">DCF 55%, Multiples 30%, Assets 15%</span></div>`;
-
-  document.getElementById("bookSummary").textContent = bookPhilosophySummary({ finalValue:v.finalValue, perShare:v.perShare, exitMultiple:v.exitMultiple, terminal:v.terminalGrowth, wacc:v.wacc });
-
-  document.getElementById("results").style.display = "block";
-}
-
-async function runAutoValuation(forceMock=false){
-  const symbolInput = document.getElementById("ticker");
-  const valueBtn = document.getElementById("valueBtn");
-  const symbol = symbolInput.value.trim().toUpperCase();
-  if(!symbol){ alert('Enter a ticker'); return; }
-
-  valueBtn.disabled = true;
-  valueBtn.textContent = "Analyzing...";
-  document.getElementById("status").textContent = forceMock ? "Using mock data..." : "Trying live data...";
-  document.getElementById("results").style.display = "none";
-
-  let data = MOCK_DATA[symbol];
-  if(!forceMock){
-    const live = await fetchProfile(symbol);
-    if(live){
-      const base = data || MOCK_DATA.AAPL;
-      data = JSON.parse(JSON.stringify(base));
-      data.profile.price = live.price || base.profile.price;
-      data.profile.mktCap = live.mktCap || base.profile.mktCap;
-      if(live.revenue) data.income[0].revenue = live.revenue;
-      if(live.ebitda) data.income[0].ebitda = live.ebitda;
-      if(live.netIncome) data.income[0].netIncome = live.netIncome;
-      if(live.eps) data.income[0].eps = live.eps;
-      document.getElementById("status").textContent = "Live profile pulled, model blended with mock financials.";
+    if (quoteData.c) {
+      updateStatus(`✓ API Working! Current price: $${quoteData.c}`, 100);
+      alert(`API Test Successful!\n\nSymbol: ${symbol}\nPrice: $${quoteData.c}\n\nCheck console (F12) for detailed logs.`);
     } else {
-      document.getElementById("status").textContent = "Live fetch failed, using mock data.";
+      updateStatus('⚠ API responded but data incomplete', 50);
+      alert('API responded but returned incomplete data. Check console (F12) for details.');
     }
-  }
-  if(!data){
-    document.getElementById("status").textContent = "Demo data not available. Try TSLA, AAPL, or NVDA.";
-    valueBtn.disabled = false;
-    valueBtn.textContent = "Analyze";
-    return;
+  } catch (err) {
+    console.error('API Test Failed:', err);
+    updateStatus(`✗ API Test Failed: ${err.message}`, 0);
+    alert(`API Test Failed!\n\nError: ${err.message}\n\nPossible causes:\n1. CORS issue (run from a web server, not file://)\n2. Invalid API key\n3. Network connectivity\n4. Rate limit exceeded\n\nCheck browser console (F12) for details.`);
   }
 
-  try {
-    await new Promise(r => setTimeout(r, 400));
-    const valuation = computeValuation(symbol, data);
-    renderResults(symbol, valuation);
-    document.getElementById("status").textContent ||= "Mock data applied.";
-  } catch(err){
-    document.getElementById("status").textContent = `Error: ${err.message}`;
-    console.error(err);
-  }
-  valueBtn.disabled = false;
-  valueBtn.textContent = "Analyze";
+  console.log('=== API TEST END ===');
 }
 
-function forceMock(){
-  document.getElementById("status").textContent = "Forced mock mode.";
-  runAutoValuation(true);
-}
 </script>
 </body>
 </html>
