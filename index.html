@@ -164,3 +164,18 @@ PER SHARE VALUE: $${perShare.toFixed(2)}
 
 </body>
 </html>
+
+<script>
+async function runAutoValuation(){
+  const symbol = document.getElementById("tickerInput").value.trim().toUpperCase();
+  const apiUrl = `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr`;
+  try {
+    const res = await fetch(apiUrl);
+    if(!res.ok) throw new Error("API error");
+    const data = await res.json();
+    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+  } catch(err){
+    document.getElementById("output").textContent = "Could not fetch data.";
+  }
+}
+</script>
