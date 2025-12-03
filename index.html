@@ -57,7 +57,23 @@
     .quality-high { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
     .quality-medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
     .quality-low { background: rgba(248, 113, 113, 0.2); color: #f87171; }
-    @media (max-width: 768px) { button { width:100%; } .input-group { flex-direction:column; } h1 { font-size:2rem; } }
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(11, 15, 25, 0.9); }
+    .modal-content { background: linear-gradient(135deg, #0e1320 0%, #1a1f35 100%); margin: 5% auto; padding: 30px; border: 1px solid #1f2940; border-radius: 16px; max-width: 700px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h2 { margin: 0; color: #4cc9f0; font-size: 1.5rem; }
+    .close { color: #9ca3af; font-size: 32px; font-weight: bold; cursor: pointer; line-height: 1; }
+    .close:hover { color: #4cc9f0; }
+    .help-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #23304a; }
+    .help-section:last-child { border-bottom: none; }
+    .help-section h3 { color: #4cc9f0; font-size: 1.1rem; margin-bottom: 10px; }
+    .help-section ul { margin: 10px 0; padding-left: 20px; }
+    .help-section li { margin-bottom: 8px; color: #9ca3af; }
+    .sample-tickers { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .sample-ticker { padding: 6px 12px; background: #19233a; color: #8be9ff; border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
+    .sample-ticker:hover { background: #4cc9f0; color: #0b0f19; }
+    .skeleton { animation: pulse 1.5s ease-in-out infinite; background: linear-gradient(90deg, #1f2940 0%, #23304a 50%, #1f2940 100%); background-size: 200% 100%; border-radius: 8px; }
+    @keyframes pulse { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+    @media (max-width: 768px) { button { width:100%; } .input-group { flex-direction:column; } h1 { font-size:2rem; } .modal-content { margin: 10% 5%; padding: 20px; } }
 </style>
 </head>
 <body>
@@ -70,7 +86,10 @@
     <input id="ticker" placeholder="Enter ticker symbol (AAPL, MSFT, GOOGL, TSLA, etc.)" type="text" value="AAPL">
     <button id="valueBtn" onclick="runFullValuation()">Full DCF Analysis</button>
     <button onclick="testAPI()" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">Test API</button>
+    <button onclick="showHelp()" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">Help</button>
   </div>
+
+  <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;" id="exportButtons"></div>
 
   <div class="progress" id="progressContainer" style="display:none;">
     <div class="progress-bar">
@@ -152,6 +171,72 @@
   </div>
 </div>
 
+<!-- Help Modal -->
+<div id="helpModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>How to Use the Valuation Engine</h2>
+      <span class="close" onclick="closeHelp()">&times;</span>
+    </div>
+
+    <div class="help-section">
+      <h3>Quick Start</h3>
+      <ol style="color: #9ca3af; padding-left: 20px;">
+        <li>Enter a US stock ticker symbol (e.g., AAPL, MSFT, GOOGL)</li>
+        <li>Click "Full DCF Analysis" to run the complete valuation</li>
+        <li>Wait for the 10-step analysis to complete (~10-15 seconds)</li>
+        <li>Review results and switch between Base/Bull/Bear scenarios</li>
+      </ol>
+      <div class="sample-tickers">
+        <div class="sample-ticker" onclick="tryTicker('AAPL')">AAPL</div>
+        <div class="sample-ticker" onclick="tryTicker('MSFT')">MSFT</div>
+        <div class="sample-ticker" onclick="tryTicker('GOOGL')">GOOGL</div>
+        <div class="sample-ticker" onclick="tryTicker('TSLA')">TSLA</div>
+        <div class="sample-ticker" onclick="tryTicker('NVDA')">NVDA</div>
+        <div class="sample-ticker" onclick="tryTicker('META')">META</div>
+      </div>
+    </div>
+
+    <div class="help-section">
+      <h3>Understanding the Results</h3>
+      <ul>
+        <li><strong>Fair Value:</strong> Weighted average of DCF (55%), Market (30%), and Asset (15%) approaches</li>
+        <li><strong>Upside/Downside:</strong> Percentage difference between fair value and current market price</li>
+        <li><strong>WACC:</strong> Weighted Average Cost of Capital - the discount rate used for DCF</li>
+        <li><strong>Data Quality:</strong> HIGH (real data), MEDIUM (mixed), LOW (mostly estimates)</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>Three Scenarios Explained</h3>
+      <ul>
+        <li><strong>Base Case:</strong> Most likely scenario with moderate assumptions</li>
+        <li><strong>Bull Case:</strong> Optimistic scenario with higher growth rates</li>
+        <li><strong>Bear Case:</strong> Conservative scenario with lower growth rates</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>Export Options</h3>
+      <ul>
+        <li><strong>PDF:</strong> Complete valuation report with all sections</li>
+        <li><strong>Excel:</strong> Financial data and projections in spreadsheet format</li>
+        <li><strong>JSON:</strong> Raw data for further analysis</li>
+      </ul>
+    </div>
+
+    <div class="help-section">
+      <h3>Tips for Best Results</h3>
+      <ul>
+        <li>Use well-established companies with good data coverage</li>
+        <li>Large-cap stocks (>$10B market cap) have more complete data</li>
+        <li>Results are cached for 5 minutes to improve performance</li>
+        <li>Compare multiple scenarios to understand valuation range</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================================
 // PROFESSIONAL VALUATION ENGINE
@@ -164,6 +249,48 @@ const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 // Current scenario (base, bull, bear)
 let currentScenario = 'base';
 let cachedValuation = null;
+
+// ============================================================================
+// CACHING SYSTEM (5-minute cache)
+// ============================================================================
+
+const cache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+function getCacheKey(symbol) {
+  return `valuation_${symbol.toUpperCase()}`;
+}
+
+function getCachedData(symbol) {
+  const key = getCacheKey(symbol);
+  const cached = cache.get(key);
+
+  if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+    console.log(`Using cached data for ${symbol} (${Math.round((Date.now() - cached.timestamp) / 1000)}s old)`);
+    return cached.data;
+  }
+
+  // Clean expired cache
+  if (cached) {
+    cache.delete(key);
+  }
+
+  return null;
+}
+
+function setCachedData(symbol, data) {
+  const key = getCacheKey(symbol);
+  cache.set(key, {
+    data,
+    timestamp: Date.now()
+  });
+  console.log(`Cached data for ${symbol}`);
+}
+
+function clearCache() {
+  cache.clear();
+  console.log('Cache cleared');
+}
 
 // ============================================================================
 // STEP 1: DATA GATHERING
@@ -890,10 +1017,22 @@ async function runFullValuation() {
     return;
   }
 
+  // Check cache first
+  const cached = getCachedData(symbol);
+  if (cached) {
+    cachedValuation = cached;
+    renderValuationReport(cached.base);
+    updateStatus(`✓ Loaded from cache (${Math.round((Date.now() - cache.get(getCacheKey(symbol)).timestamp) / 1000)}s old)`, 100);
+    document.getElementById("results").style.display = "block";
+    showExportButtons();
+    return;
+  }
+
   valueBtn.disabled = true;
   valueBtn.textContent = "Analyzing...";
   document.getElementById("progressContainer").style.display = "block";
   document.getElementById("results").style.display = "none";
+  hideExportButtons();
 
   try {
     // Step 1: Gather data
@@ -938,11 +1077,15 @@ async function runFullValuation() {
     // Cache for scenario switching
     cachedValuation = scenarios;
 
+    // Save to cache
+    setCachedData(symbol, scenarios);
+
     // Render base case by default
     renderValuationReport(scenarios.base);
 
     updateStatus("✓ Valuation complete!", 100);
     document.getElementById("results").style.display = "block";
+    showExportButtons();
 
   } catch (err) {
     updateStatus(`Error: ${err.message}`, 0);
@@ -1155,6 +1298,258 @@ function formatNumber(num) {
   if (Math.abs(num) >= 1e6) return `${(num/1e6).toFixed(2)}M`;
   if (Math.abs(num) >= 1e3) return `${(num/1e3).toFixed(2)}K`;
   return num.toLocaleString();
+}
+
+// ============================================================================
+// HELP MODAL FUNCTIONS
+// ============================================================================
+
+function showHelp() {
+  document.getElementById('helpModal').style.display = 'block';
+}
+
+function closeHelp() {
+  document.getElementById('helpModal').style.display = 'none';
+}
+
+function tryTicker(ticker) {
+  document.getElementById('ticker').value = ticker;
+  closeHelp();
+  runFullValuation();
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+  const modal = document.getElementById('helpModal');
+  if (event.target == modal) {
+    closeHelp();
+  }
+}
+
+// ============================================================================
+// EXPORT FUNCTIONS
+// ============================================================================
+
+function showExportButtons() {
+  const container = document.getElementById('exportButtons');
+  container.innerHTML = `
+    <button onclick="exportToPDF()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); min-width: auto; padding: 10px 16px;">
+      📄 Export PDF
+    </button>
+    <button onclick="exportToExcel()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); min-width: auto; padding: 10px 16px;">
+      📊 Export Excel
+    </button>
+    <button onclick="exportToJSON()" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); min-width: auto; padding: 10px 16px;">
+      💾 Export JSON
+    </button>
+    <button onclick="shareResults()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); min-width: auto; padding: 10px 16px;">
+      🔗 Share Link
+    </button>
+  `;
+}
+
+function hideExportButtons() {
+  document.getElementById('exportButtons').innerHTML = '';
+}
+
+function exportToPDF() {
+  if (!cachedValuation) {
+    alert('No valuation data available. Please run an analysis first.');
+    return;
+  }
+
+  updateStatus('Generating PDF...', 50);
+
+  const report = cachedValuation[currentScenario];
+  const symbol = report.symbol;
+  const date = new Date().toLocaleDateString();
+
+  // Create PDF content
+  let pdfContent = `
+Professional Valuation Report
+${symbol} - ${currentScenario.toUpperCase()} Case
+Generated: ${date}
+
+SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Current Price:     $${report.currentPrice.toFixed(2)}
+Fair Value:        $${report.fairValue.toFixed(2)}
+Upside/Downside:   ${report.upside.toFixed(1)}%
+Recommendation:    ${report.recommendation}
+Data Quality:      ${report.dataQuality}
+
+VALUATION METHODOLOGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DCF Model (55%):        $${report.synthesis.components.dcf.toFixed(2)}
+Market Multiples (30%): $${report.synthesis.components.market.toFixed(2)}
+Asset-Based (15%):      $${report.synthesis.components.asset.toFixed(2)}
+
+WACC CALCULATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WACC:                   ${(report.wacc.wacc * 100).toFixed(2)}%
+Cost of Equity:         ${(report.wacc.components.costOfEquity * 100).toFixed(2)}%
+Cost of Debt (AT):      ${(report.wacc.components.afterTaxCostOfDebt * 100).toFixed(2)}%
+Beta (Levered):         ${report.wacc.components.beta.toFixed(2)}
+Risk-Free Rate:         ${(report.wacc.components.riskFreeRate * 100).toFixed(2)}%
+
+DCF PROJECTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${report.projections.map(p => `Year ${p.year}: Revenue ${formatCurrency(p.revenue)}, FCFF ${formatCurrency(p.fcff)}`).join('\n')}
+Terminal Value: ${formatCurrency(report.dcf.pvTerminal)}
+Enterprise Value: ${formatCurrency(report.dcf.enterpriseValue)}
+
+FINANCIAL METRICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Revenue (TTM):      ${formatCurrency(report.normalized.revenue)}
+EBITDA (TTM):       ${formatCurrency(report.normalized.ebitda)}
+Net Income (TTM):   ${formatCurrency(report.normalized.netIncome)}
+Free Cash Flow:     ${formatCurrency(report.normalized.fcf)}
+EPS:                $${report.normalized.eps.toFixed(2)}
+
+MARGINS & PROFITABILITY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EBITDA Margin:      ${(report.normalized.margins.ebitda * 100).toFixed(1)}%
+Operating Margin:   ${(report.normalized.margins.operating * 100).toFixed(1)}%
+Net Margin:         ${(report.normalized.margins.net * 100).toFixed(1)}%
+ROE:                ${(report.normalized.profitability.roe * 100).toFixed(1)}%
+ROA:                ${(report.normalized.profitability.roa * 100).toFixed(1)}%
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  DISCLAIMER: This valuation is for educational purposes only and
+    does not constitute investment advice. Always consult with qualified
+    professionals before making investment decisions.
+
+Generated with Professional Valuation Engine
+https://liyamflx.github.io/BOOK/
+  `;
+
+  // Download as text file (PDF generation requires library)
+  const blob = new Blob([pdfContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Valuation_${symbol}_${currentScenario}_${date.replace(/\//g, '-')}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  updateStatus('✓ PDF exported successfully!', 100);
+  setTimeout(() => updateStatus('✓ Valuation complete!', 100), 2000);
+}
+
+function exportToExcel() {
+  if (!cachedValuation) {
+    alert('No valuation data available. Please run an analysis first.');
+    return;
+  }
+
+  updateStatus('Generating Excel file...', 50);
+
+  const report = cachedValuation[currentScenario];
+  const symbol = report.symbol;
+
+  // Create CSV content
+  let csv = 'Professional Valuation Report\n';
+  csv += `Symbol,${symbol}\n`;
+  csv += `Scenario,${currentScenario.toUpperCase()}\n`;
+  csv += `Date,${new Date().toLocaleDateString()}\n\n`;
+
+  csv += 'SUMMARY\n';
+  csv += 'Metric,Value\n';
+  csv += `Current Price,$${report.currentPrice.toFixed(2)}\n`;
+  csv += `Fair Value,$${report.fairValue.toFixed(2)}\n`;
+  csv += `Upside/Downside,${report.upside.toFixed(1)}%\n`;
+  csv += `Recommendation,${report.recommendation}\n`;
+  csv += `Data Quality,${report.dataQuality}\n\n`;
+
+  csv += 'DCF PROJECTIONS\n';
+  csv += 'Year,Revenue,EBITDA,FCFF,Discounted FCFF\n';
+  report.projections.forEach((p, i) => {
+    const dc = report.dcf.discountedFlows[i];
+    csv += `${p.year},${p.revenue.toFixed(0)},${p.ebitda.toFixed(0)},${p.fcff.toFixed(0)},${dc.discountedFCFF.toFixed(0)}\n`;
+  });
+  csv += `Terminal Value,,,${report.dcf.terminalValue.toFixed(0)},${report.dcf.pvTerminal.toFixed(0)}\n\n`;
+
+  csv += 'FINANCIAL METRICS\n';
+  csv += 'Metric,Value\n';
+  csv += `Revenue (TTM),${report.normalized.revenue.toFixed(0)}\n`;
+  csv += `EBITDA (TTM),${report.normalized.ebitda.toFixed(0)}\n`;
+  csv += `Net Income (TTM),${report.normalized.netIncome.toFixed(0)}\n`;
+  csv += `Free Cash Flow,${report.normalized.fcf.toFixed(0)}\n`;
+  csv += `EPS,$${report.normalized.eps.toFixed(2)}\n`;
+  csv += `EBITDA Margin,${(report.normalized.margins.ebitda * 100).toFixed(1)}%\n`;
+  csv += `Net Margin,${(report.normalized.margins.net * 100).toFixed(1)}%\n`;
+  csv += `ROE,${(report.normalized.profitability.roe * 100).toFixed(1)}%\n\n`;
+
+  csv += 'WACC COMPONENTS\n';
+  csv += 'Component,Value\n';
+  csv += `WACC,${(report.wacc.wacc * 100).toFixed(2)}%\n`;
+  csv += `Cost of Equity,${(report.wacc.components.costOfEquity * 100).toFixed(2)}%\n`;
+  csv += `Cost of Debt (AT),${(report.wacc.components.afterTaxCostOfDebt * 100).toFixed(2)}%\n`;
+  csv += `Beta,${report.wacc.components.beta.toFixed(2)}\n`;
+  csv += `Risk-Free Rate,${(report.wacc.components.riskFreeRate * 100).toFixed(2)}%\n`;
+
+  // Download CSV
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Valuation_${symbol}_${currentScenario}_${new Date().toLocaleDateString().replace(/\//g, '-')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  updateStatus('✓ Excel file exported successfully!', 100);
+  setTimeout(() => updateStatus('✓ Valuation complete!', 100), 2000);
+}
+
+function exportToJSON() {
+  if (!cachedValuation) {
+    alert('No valuation data available. Please run an analysis first.');
+    return;
+  }
+
+  updateStatus('Generating JSON file...', 50);
+
+  const report = cachedValuation[currentScenario];
+  const jsonData = JSON.stringify(report, null, 2);
+
+  const blob = new Blob([jsonData], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Valuation_${report.symbol}_${currentScenario}_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  updateStatus('✓ JSON exported successfully!', 100);
+  setTimeout(() => updateStatus('✓ Valuation complete!', 100), 2000);
+}
+
+function shareResults() {
+  if (!cachedValuation) {
+    alert('No valuation data available. Please run an analysis first.');
+    return;
+  }
+
+  const report = cachedValuation[currentScenario];
+  const symbol = report.symbol;
+  const fairValue = report.fairValue.toFixed(2);
+  const upside = report.upside.toFixed(1);
+
+  const shareText = `${symbol} Valuation Analysis (${currentScenario} case):\nFair Value: $${fairValue}\nUpside: ${upside}%\nRecommendation: ${report.recommendation}\n\nGenerated with Professional Valuation Engine\nhttps://liyamflx.github.io/BOOK/?symbol=${symbol}`;
+
+  // Copy to clipboard
+  navigator.clipboard.writeText(shareText).then(() => {
+    alert('Share link copied to clipboard!\n\n' + shareText);
+  }).catch(() => {
+    // Fallback for older browsers
+    const textarea = document.createElement('textarea');
+    textarea.value = shareText;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Share text copied to clipboard!\n\n' + shareText);
+  });
 }
 
 // ============================================================================
