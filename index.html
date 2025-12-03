@@ -1,104 +1,360 @@
-<!DOCTYPE html>
-<html>
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  background-color: white; /* Ensure the iframe has a white background */
+                }
+
+                
+              </style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Auto Valuation Engine – MarkovFlx</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    body { font-family: Inter, sans-serif; background:#0b0f19; color:#eee; padding:25px;}
-    input { padding:10px; width:250px; border-radius:8px; border:1px solid #23304a; background:#101526; color:white;}
-    button { padding:10px 20px; background:#4cc9f0; border:none; color:black; font-weight:700; border-radius:8px; margin-left:10px; cursor:pointer;}
-    .card { background:#141a2e; padding:20px; border-radius:12px; border:1px solid #1f2940; margin-top:20px; }
-    pre { background:#0e1320; padding:20px; border-radius:12px; white-space:pre-wrap; }
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #0b0f19 0%, #111827 100%);
+        color: #e5e7eb;
+        min-height: 100vh;
+        padding: 25px;
+        line-height: 1.6;
+    }
+    
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    h1 {
+        font-size: 2.25rem;
+        font-weight: 800;
+        margin-bottom: 24px;
+        background: linear-gradient(90deg, #4cc9f0, #4361ee);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .input-group {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+    
+    input {
+        flex: 1;
+        min-width: 200px;
+        padding: 12px 16px;
+        width: 260px;
+        border-radius: 12px;
+        border: 2px solid #23304a;
+        background: #101526;
+        color: white;
+        font-size: 16px;
+        transition: all 0.2s ease;
+    }
+    
+    input:focus {
+        outline: none;
+        border-color: #4cc9f0;
+        box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+    }
+    
+    button {
+        padding: 12px 28px;
+        background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+        border: none;
+        color: black;
+        font-weight: 700;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.2s ease;
+        min-width: 100px;
+    }
+    
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 201, 240, 0.3);
+    }
+    
+    button:active {
+        transform: translateY(0);
+    }
+    
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    #status {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #4cc9f0;
+        min-height: 20px;
+        font-weight: 500;
+    }
+    
+    #output {
+        background: linear-gradient(135deg, #0e1320 0%, #1a1f35 100%);
+        padding: 24px;
+        border-radius: 16px;
+        white-space: pre-wrap;
+        margin-top: 24px;
+        border: 1px solid #1f2940;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 13px;
+        line-height: 1.5;
+        overflow-x: auto;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    .positive {
+        color: #4ade80;
+    }
+    
+    .negative {
+        color: #f87171;
+    }
+    
+    @media (max-width: 600px) {
+        .input-group {
+            flex-direction: column;
+        }
+        
+        button {
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 1.75rem;
+        }
+        body {
+            padding: 16px;
+        }
+    }
 </style>
 </head>
 <body>
 
-<h1>1-Click Stock Valuation (MarkovFlx)</h1>
+<div class="container">
+    <h1>1-Click Stock Valuation (MarkovFlx)</h1>
 
-<input id="ticker" placeholder="AAPL, TSLA, NVDA">
-<button onclick="runAutoValuation()">Value</button>
+    <div class="input-group">
+        <input id="ticker" placeholder="Try: TSLA, AAPL, or NVDA" type="text" value="TSLA">
+        <button id="valueBtn" onclick="runAutoValuation()">Value</button>
+    </div>
 
-<div id="status"></div>
-<pre id="output"></pre>
+    <div id="status"></div>
+    <pre id="output">Click "Value" to run a demo valuation using realistic mock data.</pre>
+</div>
 
 <script>
-async function runAutoValuation(){
-    const symbol = document.getElementById("ticker").value.toUpperCase();
-    document.getElementById("status").textContent = "Fetching data…";
-<script>
-async function runAutoValuation(){
-  const symbol = document.getElementById("tickerInput").value.trim().toUpperCase();
-  if(!symbol){ alert("Enter a ticker"); return; }
-  const apiUrl = `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr`;
-  try {
-    const res = await fetch(apiUrl);
-    if(!res.ok) throw new Error("API error");
-    const data = await res.json();
-    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
-  } catch (err) {
-    document.getElementById("output").textContent = "Could not fetch data.";
-  }
-}
-</script>        const finalValue =
-            0.55*dcf +
-            0.30*multiplesValue +
-            0.15*assetsValue;
+// Mock financial data for demo purposes
+const MOCK_DATA = {
+    TSLA: {
+        profile: { price: 250.22, mktCap: 794000000000 },
+        income: [
+            { revenue: 96773000000, ebitda: 16243000000, ebit: 13656000000, netIncome: 14997000000 }, // TTM
+            { revenue: 81462000000, ebitda: 14500000000, ebit: 12500000000, netIncome: 12500000000 }  // Prior year
+        ],
+        balance: { cashAndCashEquivalents: 29000000000, totalDebt: 6429000000 }
+    },
+    AAPL: {
+        profile: { price: 182.52, mktCap: 2830000000000 },
+        income: [
+            { revenue: 383933000000, ebitda: 130157000000, ebit: 114987000000, netIncome: 96995000000 },
+            { revenue: 394328000000, ebitda: 125000000000, ebit: 110000000000, netIncome: 94000000000 }
+        ],
+        balance: { cashAndCashEquivalents: 67200000000, totalDebt: 111107000000 }
+    },
+    NVDA: {
+        profile: { price: 1025.04, mktCap: 2528000000000 },
+        income: [
+            { revenue: 60922000000, ebitda: 36254000000, ebit: 33798000000, netIncome: 29760000000 },
+            { revenue: 26974000000, ebitda: 15000000000, ebit: 12000000000, netIncome: 9700000000 }
+        ],
+        balance: { cashAndCashEquivalents: 29800000000, totalDebt: 11681000001 }
+    }
+};
 
+async function runAutoValuation() {
+    const symbolInput = document.getElementById("ticker");
+    const valueBtn = document.getElementById("valueBtn");
+    const symbol = symbolInput.value.trim().toUpperCase();
+    
+    if (!symbol) {
+        alert("Please enter a ticker symbol");
+        return;
+    }
+
+    valueBtn.disabled = true;
+    valueBtn.textContent = "Analyzing...";
+    document.getElementById("status").textContent = "Running valuation model…";
+
+    try {
+        // Simulate API delay
+        await new Promise(r => setTimeout(r, 800));
+
+        const data = MOCK_DATA[symbol];
+        if (!data) {
+            throw new Error(`Demo data not available for ${symbol}. Try: TSLA, AAPL, or NVDA`);
+        }
+
+        const profile = data.profile;
+        const financials = data.income;
+        const balance = data.balance;
+
+        const curr = financials[0];
+        const prev = financials[1];
+
+        // Extract data
+        const price = profile.price;
+        const mktCap = profile.mktCap;
+        const shares = mktCap / price;
+        const revenue = curr.revenue;
+        const ebitda = curr.ebitda;
+        const ebit = curr.ebit;
+        const netIncome = curr.netIncome;
+        const cash = balance.cashAndCashEquivalents;
+        const debt = balance.totalDebt;
+
+        const revGrowth = (curr.revenue - prev.revenue) / prev.revenue;
+        const ebitMargin = ebit / revenue;
+
+        // Modeling assumptions
+        const wacc = 0.10;
+        const growth = Math.max(0.02, Math.min(0.25, revGrowth));
+
+        // DCF
+        let dcf = 0;
+        let fcff = ebit * (1 - 0.21);
+        let current = fcff;
+
+        for (let i = 1; i <= 5; i++) {
+            current = current * (1 + growth);
+            dcf += current / Math.pow(1 + wacc, i);
+        }
+
+        const terminalValue = (current * (1 + 0.02)) / (wacc - 0.02);
+        const presentTerminal = terminalValue / Math.pow(1 + wacc, 5);
+        dcf += presentTerminal;
+
+        // Multiples
+        const sectorPE = 18;
+        const sectorEVEBITDA = 12;
+        const multPE = netIncome * sectorPE;
+        const multEV = ebitda * sectorEVEBITDA + cash - debt;
+        const multiplesValue = (multPE + multEV) / 2;
+
+        // Assets
+        const assetsValue = cash - debt + mktCap * 0.15;
+
+        // Final blended value
+        const finalValue = 0.55 * dcf + 0.30 * multiplesValue + 0.15 * assetsValue;
         const perShare = finalValue / shares;
+        const upside = ((perShare / price - 1) * 100);
 
-        // -----------------------------
-        // OUTPUT
-        // -----------------------------
-        document.getElementById("status").textContent = "";
-        document.getElementById("output").textContent =
-`AUTO VALUATION FOR ${symbol}
+        // Formatting helpers
+        const formatCurrency = (num) => {
+            if (Math.abs(num) >= 1e12) return `$${(num/1e12).toFixed(2)}T`;
+            if (Math.abs(num) >= 1e9) return `$${(num/1e9).toFixed(2)}B`;
+            if (Math.abs(num) >= 1e6) return `$${(num/1e6).toFixed(2)}M`;
+            if (Math.abs(num) >= 1e3) return `$${(num/1e3).toFixed(2)}K`;
+            return `$${num.toFixed(2)}`;
+        };
 
-Revenue (TTM): ${revenue.toLocaleString()}
-EBITDA (TTM): ${ebitda.toLocaleString()}
-Shares: ${shares.toLocaleString()}
+        const formatNumber = (num) => {
+            if (Math.abs(num) >= 1e12) return `${(num/1e12).toFixed(2)}T`;
+            if (Math.abs(num) >= 1e9) return `${(num/1e9).toFixed(2)}B`;
+            if (Math.abs(num) >= 1e6) return `${(num/1e6).toFixed(2)}M`;
+            if (Math.abs(num) >= 1e3) return `${(num/1e3).toFixed(2)}K`;
+            return num.toLocaleString();
+        };
 
-Revenue Growth: ${(revGrowth*100).toFixed(2)}%
+        const upsideText = upside > 0 ? `+${upside.toFixed(2)}%` : `${upside.toFixed(2)}%`;
+
+        const out = `AUTO VALUATION – ${symbol} (DEMO)
+
+Current Price: $${price.toFixed(2)}
+Market Cap: ${formatNumber(mktCap)}
+
+Revenue (TTM): ${formatNumber(revenue)}
+EBITDA (TTM): ${formatNumber(ebitda)}
+Net Income (TTM): ${formatNumber(netIncome)}
+Shares Outstanding: ${formatNumber(Math.round(shares))}
+
+Revenue Growth YoY: ${(revGrowth*100).toFixed(2)}%
 EBIT Margin: ${(ebitMargin*100).toFixed(2)}%
-CapEx %: ${(capexPct*100).toFixed(2)}%
-Depreciation %: ${(depPct*100).toFixed(2)}%
-Working Capital %: ${(wcPct*100).toFixed(2)}%
 
-WACC: ${(wacc*100).toFixed(2)}%
-
-DCF Value: ${dcf.toFixed(2)}
-Multiples Value: ${multiplesValue.toFixed(2)}
-Asset Value: ${assetsValue.toFixed(2)}
+WACC: ${(wacc*100).toFixed(1)}%
+Forecast Growth: ${(growth*100).toFixed(1)}%
 
 -------------------------------------
-FINAL VALUATION: ${finalValue.toFixed(2)}
-PER SHARE VALUE: $${perShare.toFixed(2)}
+DCF Value: ${formatCurrency(dcf)}
+Multiples Value: ${formatCurrency(multiplesValue)}
+Asset Value: ${formatCurrency(assetsValue)}
 -------------------------------------
 
-(All inputs auto-filled, all modeling automatic)
+FINAL FAIR VALUE: ${formatCurrency(finalValue)}
+FAIR VALUE PER SHARE: $${perShare.toFixed(2)}
+
+Upside: ${upsideText}
+-------------------------------------
+(Demo mode – using mock financial data)
 `;
-    }
-    catch(e){
-        document.getElementById("output").textContent = "Could not fetch data.";
+
+        document.getElementById("status").textContent = "✅ Demo complete!";
+        document.getElementById("output").textContent = out;
+
+    } catch (err) {
+        document.getElementById("status").textContent = "❌ Error";
+        document.getElementById("output").textContent = err.message;
+    } finally {
+        valueBtn.disabled = false;
+        valueBtn.textContent = "Value";
     }
 }
+
+// Allow Enter key
+document.getElementById("ticker").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") runAutoValuation();
+});
+
+// Run on load for demo
+window.onload = () => {
+    setTimeout(runAutoValuation, 500);
+};
 </script>
 
 </body>
 </html>
 
-<script>
-async function runAutoValuation(){
-  const symbol = document.getElementById("tickerInput").value.trim().toUpperCase();
-  const apiUrl = `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr`;
-  try {
-    const res = await fetch(apiUrl);
-    if(!res.ok) throw new Error("API error");
-    const data = await res.json();
-    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
-  } catch(err){
-    document.getElementById("output").textContent = "Could not fetch data.";
-  }
-}
-</script>
+
+
+              <script>
+                                 const key = "YOUR_NEW_API_KEY_HERE";
+   
+
+              </script>
+                        </body>
+                        </html>
+                    
