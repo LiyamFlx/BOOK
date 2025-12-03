@@ -34,31 +34,16 @@ async function runAutoValuation(){
         // -----------------------------
         const url = `https://financialmodelingprep.com/api/v3/profile/${symbol}??apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr
 
-        const res = await fetch(`https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr`);
-        const data = await res.json();
-        const r = data.quoteSummary.result[0];
-
-        const fin = r.financialData;
-        const stats = r.defaultKeyStatistics;
-        const price = r.price;
-
-        const incomeNow = r.incomeStatementHistory.incomeStatementHistory[0];
-        const incomePrev = r.incomeStatementHistory.incomeStatementHistory[1];
-
-        const balance = r.balanceSheetHistory.balanceSheetStatements[0];
-        const balancePrev = r.balanceSheetHistory.balanceSheetStatements[1];
-
-        // -----------------------------
-        // MAIN INPUTS (Auto-filled)
-        // -----------------------------
-        const revenue = incomeNow.totalRevenue.raw;
-        const revenuePrev = incomePrev.totalRevenue.raw;
-
-        const ebit = incomeNow.ebit.raw;
-        const ebitda = fin.ebitda.raw;
-        const shares = stats.sharesOutstanding.raw;
-
-        const capex = -incomeNow.capitalExpenditures.raw;
+        const symbol = document.getElementById("tickerInput").value.trim().toUpperCase();
+        const apiUrl = `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr`;
+        try {
+            const res = await fetch(apiUrl);
+            if (!res.ok) throw new Error("API error");
+            const data = await res.json();
+            document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+        } catch (err) {
+            document.getElementById("output").textContent = "Could not fetch data.";
+        }        const capex = -incomeNow.capitalExpenditures.raw;
         const depreciation = incomeNow.depreciation.raw;
 
         const wc = balance.totalCurrentAssets.raw - balance.totalCurrentLiabilities.raw;
