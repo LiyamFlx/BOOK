@@ -32,7 +32,7 @@ async function runAutoValuation(){
         // -----------------------------
         // AUTO DATA FETCH - Yahoo Finance
         // -----------------------------
-        const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=financialData,defaultKeyStatistics,price,incomeStatementHistory,balanceSheetHistory,earnings`;
+        const url = `https://financialmodelingprep.com/api/v3/profile/${symbol}??apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr
 
         const res = await fetch(`https://yf-proxy.liyamflexer.workers.dev/?url=${encodeURIComponent(url)}`);
         const data = await res.json();
