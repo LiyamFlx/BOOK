@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Valuation Calculator</title>
+<style>
+    body { font-family: Arial; max-width: 900px; margin: auto; padding: 20px; }
+    h1 { font-size: 26px; }
+    h2 { margin-top: 40px; }
+    label { font-weight: bold; display: block; margin-top: 12px; }
+    input { width: 200px; padding: 6px; }
+    button { padding: 10px 20px; background:black; color:white; border:none; margin-top:20px; cursor:pointer;}
+    pre { background:#f5f5f5; padding:15px; }
+</style>
+</head>
+<body>
+
+<h1>Business Valuation Calculator</h1>
+<p>Based on the full valuation methodology from "המדריך להערכת שווי חברות".</p>
+
+<!-- BASIC INPUTS -->
+<h2>Company Inputs</h2>
+<label>Recent Revenue</label><input id="rev" type="number" />
+
+<label>Recent EBITDA</label><input id="ebitda" type="number" />
+
+<label>Shares Outstanding</label><input id="shares" type="number" value="1000000" />
+
+<!-- FORECAST -->
+<h2>Forecast Assumptions</h2>
+<label>Revenue Growth (comma separated)</label>
+<input id="fgrowth" value="0.05,0.05,0.05">
+
+<label>EBIT Margin (comma separated)</label>
+<input id="fmargin" value="0.20,0.20,0.20">
+
+<label>Capex % of Revenue</label>
+<input id="fcapex" value="0.05,0.05,0.05">
+
+<label>Working Capital %</label>
+<input id="fwc" value="0.02,0.02,0.02">
+
+<label>Depreciation %</label>
+<input id="fdep" value="0.03,0.03,0.03">
+
+<!-- MARKET -->
+<h2>Market Data (Required for WACC)</h2>
+<label>Risk-Free Rate</label><input id="rf" value="0.03">
+
+<label>Market Return</label><input id="rm" value="0.09">
+
+<label>Beta</label><input id="beta" value="1.2">
+
+<label>Country Risk Premium</label><input id="crp" value="0.015">
+
+<label>Size Premium</label><input id="sz" value="0.01">
+
+<label>Cost of Debt</label><input id="kd" value="0.05">
+
+<label>Debt-to-Equity Ratio</label><input id="d2e" value="0.3">
+
+<!-- MULTIPLES -->
+<h2>Valuation Multiples</h2>
+<label>EV/EBITDA comps</label><input id="m_ebitda" value="8,9,10">
+
+<label>EV/Sales comps</label><input id="m_sales" value="2,3">
+
+<label>P/E comps</label><input id="m_pe" value="12,15">
+
+<label>Precedent Transactions (EV/EBITDA)</label><input id="m_prec" value="9,10,11">
+
+<!-- ASSETS -->
+<h2>Asset-Based Valuation</h2>
+<label>Tangible Assets</label><input id="tas" value="1000000">
+
+<label>Intangible Assets</label><input id="ias" value="200000">
+
+<label>Cash</label><input id="cash" value="300000">
+
+<label>Debt</label><input id="debt" value="400000">
+
+<label>Minority Interest</label><input id="mi" value="0">
+
+<!-- ADJUSTMENTS -->
+<h2>Adjustments</h2>
+<label>Non-Recurring Expenses</label><input id="adj_exp" value="0">
+
+<label>Non-Recurring Income</label><input id="adj_inc" value="0">
+
+<label>Management Adjustment</label><input id="adj_mgmt" value="0">
+
+<label>Related-Party Adjustment</label><input id="adj_rel" value="0">
+
+<!-- TERMINAL -->
+<h2>Terminal Value Settings</h2>
+<label>Perpetual Growth</label><input id="tg" value="0.02">
+
+<label>Exit Multiple</label><input id="xmult" value="10">
+
+<button onclick="runCalc()">Calculate Valuation</button>
+
+<h2>Valuation Result</h2>
+<pre id="output"></pre>
+
+<script>
+function arr(id){ return document.getElementById(id).value.split(",").map(Number); }
+function num(id){ return parseFloat(document.getElementById(id).value); }
+
+function runCalc(){
+    // -------------------------
+    // WACC & COST OF EQUITY
+    // -------------------------
+    const rf = num("rf"), rm = num("rm"), beta = num("beta");
+    const erp = rm - rf;
+    const ke = rf + beta * erp + num("crp") + num("sz");
+    const kd = num("kd") * (1 - 0.23);
+    const d2e = num("d2e");
+    const e = 1/(1+d2e), d = 1-e;
+    const wacc = ke * e + kd * d;
+
+    // -------------------------
+    // FORECAST FCFF
+    // -------------------------
+    let revenue = num("rev");
+    let fcff = [];
+
+    const g = arr("fgrowth"), m = arr("fmargin"),
+          cap = arr("fcapex"), wc = arr("fwc"), dep = arr("fdep");
+
+    for(let i=0;i<g.length;i++){
+        revenue *= 1 + g[i];
+        const ebit = revenue * m[i];
+        const nopat = ebit * (1 - 0.23);
+        const depreciation = revenue * dep[i];
+        const capex = revenue * cap[i];
+        const wc_change = revenue * wc[i];
+        const f = nopat + depreciation - capex - wc_change;
+        fcff.push(f);
+    }
+
+    // -------------------------
+    // DCF
+    // -------------------------
+    const disc = fcff.map((cf,i)=> cf / Math.pow(1+wacc,i+1));
+    const terminal_gordon = fcff[fcff.length-1] * (1+num("tg")) / (wacc - num("tg"));
+    const terminal_disc = terminal_gordon / Math.pow(1+wacc, fcff.length);
+    let dcf = disc.reduce((a,b)=>a+b,0) + terminal_disc;
+
+    // APPLY ADJUSTMENTS
+    dcf += num("adj_mgmt") + num("adj_rel") + num("adj_exp") - num("adj_inc");
+
+    // -------------------------
+    // MULTIPLES
+    // -------------------------
+    const ebitda = num("ebitda");
+    const revenue0 = num("rev");
+    const ev_e = arr("m_ebitda").reduce((a,b)=>a+b)/arr("m_ebitda").length * ebitda;
+    const ev_s = arr("m_sales").reduce((a,b)=>a+b)/arr("m_sales").length * revenue0;
+    const pe = arr("m_pe").reduce((a,b)=>a+b)/arr("m_pe").length * (ebitda*0.7);
+    const pres = arr("m_prec").reduce((a,b)=>a+b)/arr("m_prec").length * ebitda;
+
+    const multiples_avg = (ev_e+ev_s+pe+pres)/4;
+
+    // -------------------------
+    // ASSET VALUATION
+    // -------------------------
+    const nav = num("tas") + num("ias") + num("cash") - num("debt") - num("mi");
+    const liq = nav * 0.75;
+    const assets_avg = (nav + liq)/2;
+
+    // -------------------------
+    // FUSION VALUATION
+    // -------------------------
+    const final_value = 0.55*dcf + 0.30*multiples_avg + 0.15*assets_avg;
+
+    const per_share = final_value / num("shares");
+
+    // -------------------------
+    // OUTPUT
+    // -------------------------
+    document.getElementById("output").textContent =
+`WACC: ${wacc.toFixed(4)}
+DCF Value: ${dcf.toFixed(2)}
+Multiples Avg: ${multiples_avg.toFixed(2)}
+Asset Value Avg: ${assets_avg.toFixed(2)}
+
+-----------------------------------
+FINAL VALUATION: ${final_value.toFixed(2)}
+PER SHARE VALUE: ${per_share.toFixed(4)}
+-----------------------------------
+(All valuation methods: DCF + Multiples + Assets + Adjustments)
+`;
+}
+</script>
+
+</body>
+</html>
