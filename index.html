@@ -27,98 +27,21 @@
 async function runAutoValuation(){
     const symbol = document.getElementById("ticker").value.toUpperCase();
     document.getElementById("status").textContent = "Fetching data…";
-
-    try {
-        // -----------------------------
-        // AUTO DATA FETCH - Yahoo Finance
-        // -----------------------------
-        const url = `https://financialmodelingprep.com/api/v3/profile/${symbol}??apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr
-
-        const symbol = document.getElementById("tickerInput").value.trim().toUpperCase();
-        const apiUrl = `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr`;
-        try {
-            const res = await fetch(apiUrl);
-            if (!res.ok) throw new Error("API error");
-            const data = await res.json();
-            document.getElementById("output").textContent = JSON.stringify(data, null, 2);
-        } catch (err) {
-            document.getElementById("output").textContent = "Could not fetch data.";
-        }        const capex = -incomeNow.capitalExpenditures.raw;
-        const depreciation = incomeNow.depreciation.raw;
-
-        const wc = balance.totalCurrentAssets.raw - balance.totalCurrentLiabilities.raw;
-        const wcPrev = balancePrev.totalCurrentAssets.raw - balancePrev.totalCurrentLiabilities.raw;
-
-        // -----------------------------
-        // AUTO-DERIVED MODELING ASSUMPTIONS
-        // -----------------------------
-        const revGrowth = (revenue / revenuePrev - 1);
-        const ebitMargin = ebit / revenue;
-        const capexPct = capex / revenue;
-        const depPct = depreciation / revenue;
-        const wcPct = (wc - wcPrev) / revenue;
-
-        // Forecast for 3 years using stabilization
-        const g = [revGrowth, revGrowth * 0.8, revGrowth * 0.6];
-        const m = [ebitMargin, ebitMargin, ebitMargin * 0.95];
-        const cap = [capexPct, capexPct, capexPct];
-        const dep = [depPct, depPct, depPct];
-        const wcg = [wcPct, wcPct, wcPct];
-
-        // -----------------------------
-        // DISCOUNT RATE (WACC)
-        // -----------------------------
-        const rf = 0.04;                        // US 10Y
-        const mrp = 0.055;                      // Global equity risk premium
-        const beta = stats.beta.raw || 1.0;
-        const ke = rf + beta * mrp + 0.015;     // + country risk
-        const kd = 0.05;                        // assumed
-        const tax = 0.23;
-        const d2e = 0.3;
-
-        const e = 1/(1+d2e), d = 1-e;
-        const wacc = ke * e + kd * (1-tax) * d;
-
-        // -----------------------------
-        // FCFF FORECAST
-        // -----------------------------
-        let rev = revenue;
-        let fcff = [];
-
-        for(let i=0;i<3;i++){
-            rev *= (1 + g[i]);
-            const EBIT = rev * m[i];
-            const NOPAT = EBIT * (1 - tax);
-            const f = NOPAT + rev*dep[i] - rev*cap[i] - rev*wcg[i];
-            fcff.push(f);
-        }
-
-        const disc = fcff.map((f,i)=>f/Math.pow(1+wacc,i+1));
-        const dcf = disc.reduce((a,b)=>a+b,0)
-            + (fcff[2]*(1+0.02)/(wacc-0.02))/Math.pow(1+wacc,3);
-
-        // -----------------------------
-        // MULTIPLES AUTO-GENERATED
-        // -----------------------------
-        const pe = stats.forwardPE?.raw ?? stats.trailingPE?.raw ?? 15;
-        const ps = price.marketCap.raw / revenue;
-        const ev_ebitda = price.marketCap.raw / ebitda;
-
-        const multiplesValue = (pe*(ebitda*0.7) + ps*revenue + ev_ebitda*ebitda) / 3;
-
-        // -----------------------------
-        // BALANCE SHEET (NAV)
-        // -----------------------------
-        const nav = 
-            balance.totalAssets.raw
-            - balance.totalLiab.raw;
-
-        const assetsValue = (nav + nav*0.75) / 2;
-
-        // -----------------------------
-        // FINAL FUSION VALUATION
-        // -----------------------------
-        const finalValue =
+<script>
+async function runAutoValuation(){
+  const symbol = document.getElementById("tickerInput").value.trim().toUpperCase();
+  if(!symbol){ alert("Enter a ticker"); return; }
+  const apiUrl = `https://financialmodelingprep.com/api/v3/profile/${symbol}?apikey=WXZO5r7m1tICZmJU5Zkw2MO4riDpMZJr`;
+  try {
+    const res = await fetch(apiUrl);
+    if(!res.ok) throw new Error("API error");
+    const data = await res.json();
+    document.getElementById("output").textContent = JSON.stringify(data, null, 2);
+  } catch (err) {
+    document.getElementById("output").textContent = "Could not fetch data.";
+  }
+}
+</script>        const finalValue =
             0.55*dcf +
             0.30*multiplesValue +
             0.15*assetsValue;
