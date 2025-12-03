@@ -2,195 +2,241 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>MarkovFlx Valuation Engine</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Business Valuation Calculator</title>
 <style>
-    body { font-family: Arial; max-width: 900px; margin: auto; padding: 20px; }
-    h1 { font-size: 26px; }
-    h2 { margin-top: 40px; }
-    label { font-weight: bold; display: block; margin-top: 12px; }
-    input { width: 200px; padding: 6px; }
-    button { padding: 10px 20px; background:black; color:white; border:none; margin-top:20px; cursor:pointer;}
-    pre { background:#f5f5f5; padding:15px; }
+    body { font-family: Inter, sans-serif; background:#0b0f19; color:#eee; margin:0; padding:20px; }
+    h1 { font-size: 28px; font-weight:700; color:#4cc9f0; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:20px; }
+    .card { background:#141a2e; padding:20px; border-radius:12px; border:1px solid #1f2940; }
+    label { font-weight:600; margin-top:10px; display:block; }
+    input, select { padding:8px; width:100%; background:#101526; border:1px solid #23304a; color:white; border-radius:8px; }
+    button { margin-top:15px; padding:12px 18px; background:#4cc9f0; border:none; border-radius:8px; cursor:pointer; color:#000; font-weight:700; }
+    pre { background:#0e1320; padding:20px; border-radius:12px; }
+    .output-header { font-size:20px; font-weight:600; color:#4cc9f0; margin-top:30px; }
 </style>
 </head>
 <body>
 
-<h1>Business Valuation Calculator</h1>
-<p>Based on the full valuation methodology from "המדריך להערכת שווי חברות".</p>
+<h1>MarkovFlx – Business Valuation Engine</h1>
 
-<!-- BASIC INPUTS -->
-<h2>Company Inputs</h2>
-<label>Recent Revenue</label><input id="rev" type="number" />
+<!-- AUTO DATA FETCH -->
+<div class="card">
+    <h2>Auto-Pull Company Financials</h2>
+    <label>Enter Ticker (Yahoo Finance)</label>
+    <input id="ticker" placeholder="AAPL, TSLA, GOOG">
+    <button onclick="fetchFinancials()">Fetch Financials</button>
+    <p id="fetchStatus"></p>
+</div>
 
-<label>Recent EBITDA</label><input id="ebitda" type="number" />
+<!-- INPUT GRID -->
+<div class="grid">
 
-<label>Shares Outstanding</label><input id="shares" type="number" value="1000000" />
+    <!-- COMPANY CARD -->
+    <div class="card">
+        <h3>Company Inputs</h3>
+        <label>Revenue (TTM)</label><input id="rev">
+        <label>EBITDA (TTM)</label><input id="ebitda">
+        <label>Shares Outstanding</label><input id="shares" value="1000000">
+    </div>
 
-<!-- FORECAST -->
-<h2>Forecast Assumptions</h2>
-<label>Revenue Growth (comma separated)</label>
-<input id="fgrowth" value="0.05,0.05,0.05">
+    <!-- FORECAST -->
+    <div class="card">
+        <h3>Forecast</h3>
+        <label>Revenue Growth (%) yearly</label><input id="fg" value="5,5,5">
+        <label>EBIT Margin (%)</label><input id="fm" value="20,20,20">
+        <label>Capex %</label><input id="cap" value="5,5,5">
+        <label>Working Capital %</label><input id="wc" value="2,2,2">
+        <label>Depreciation %</label><input id="dep" value="3,3,3">
+    </div>
 
-<label>EBIT Margin (comma separated)</label>
-<input id="fmargin" value="0.20,0.20,0.20">
+    <!-- MARKET DATA -->
+    <div class="card">
+        <h3>Market Data</h3>
+        <label>Risk-Free (%)</label><input id="rf" value="3">
+        <label>Market Return (%)</label><input id="rm" value="9">
+        <label>Beta</label><input id="beta" value="1.2">
+        <label>Country Risk (%)</label><input id="crp" value="1.5">
+        <label>Size Premium (%)</label><input id="sz" value="1">
+        <label>Cost of Debt (%)</label><input id="kd" value="5">
+        <label>Debt to Equity</label><input id="d2e" value="0.3">
+    </div>
 
-<label>Capex % of Revenue</label>
-<input id="fcapex" value="0.05,0.05,0.05">
+    <!-- MULTIPLES -->
+    <div class="card">
+        <h3>Market Multiples</h3>
+        <label>EV/EBITDA</label><input id="m_e" value="8,9,10">
+        <label>EV/Sales</label><input id="m_s" value="2,3">
+        <label>P/E</label><input id="m_p" value="12,15">
+        <label>Precedents (EV/EBITDA)</label><input id="m_pr" value="9,10,11">
+    </div>
 
-<label>Working Capital %</label>
-<input id="fwc" value="0.02,0.02,0.02">
+    <!-- ASSETS -->
+    <div class="card">
+        <h3>Assets</h3>
+        <label>Tangible Assets</label><input id="ta" value="1000000">
+        <label>Intangible Assets</label><input id="ia" value="200000">
+        <label>Cash</label><input id="cash" value="300000">
+        <label>Debt</label><input id="debt" value="400000">
+        <label>Minority Interest</label><input id="mi" value="0">
+    </div>
 
-<label>Depreciation %</label>
-<input id="fdep" value="0.03,0.03,0.03">
+    <!-- TERMINAL -->
+    <div class="card">
+        <h3>Terminal</h3>
+        <label>Terminal Growth (%)</label><input id="tg" value="2">
+        <label>Exit Multiple</label><input id="xm" value="10">
+    </div>
+</div>
 
-<!-- MARKET -->
-<h2>Market Data (Required for WACC)</h2>
-<label>Risk-Free Rate</label><input id="rf" value="0.03">
+<button onclick="calculate()">Run Valuation</button>
+<button onclick="exportCSV()">Export CSV</button>
+<button onclick="exportReport()">Download Report</button>
 
-<label>Market Return</label><input id="rm" value="0.09">
-
-<label>Beta</label><input id="beta" value="1.2">
-
-<label>Country Risk Premium</label><input id="crp" value="0.015">
-
-<label>Size Premium</label><input id="sz" value="0.01">
-
-<label>Cost of Debt</label><input id="kd" value="0.05">
-
-<label>Debt-to-Equity Ratio</label><input id="d2e" value="0.3">
-
-<!-- MULTIPLES -->
-<h2>Valuation Multiples</h2>
-<label>EV/EBITDA comps</label><input id="m_ebitda" value="8,9,10">
-
-<label>EV/Sales comps</label><input id="m_sales" value="2,3">
-
-<label>P/E comps</label><input id="m_pe" value="12,15">
-
-<label>Precedent Transactions (EV/EBITDA)</label><input id="m_prec" value="9,10,11">
-
-<!-- ASSETS -->
-<h2>Asset-Based Valuation</h2>
-<label>Tangible Assets</label><input id="tas" value="1000000">
-
-<label>Intangible Assets</label><input id="ias" value="200000">
-
-<label>Cash</label><input id="cash" value="300000">
-
-<label>Debt</label><input id="debt" value="400000">
-
-<label>Minority Interest</label><input id="mi" value="0">
-
-<!-- ADJUSTMENTS -->
-<h2>Adjustments</h2>
-<label>Non-Recurring Expenses</label><input id="adj_exp" value="0">
-
-<label>Non-Recurring Income</label><input id="adj_inc" value="0">
-
-<label>Management Adjustment</label><input id="adj_mgmt" value="0">
-
-<label>Related-Party Adjustment</label><input id="adj_rel" value="0">
-
-<!-- TERMINAL -->
-<h2>Terminal Value Settings</h2>
-<label>Perpetual Growth</label><input id="tg" value="0.02">
-
-<label>Exit Multiple</label><input id="xmult" value="10">
-
-<button onclick="runCalc()">Calculate Valuation</button>
-
-<h2>Valuation Result</h2>
+<div class="output-header">Valuation Output</div>
 <pre id="output"></pre>
 
 <script>
-function arr(id){ return document.getElementById(id).value.split(",").map(Number); }
-function num(id){ return parseFloat(document.getElementById(id).value); }
+function arr(v){ return v.split(",").map(x=>parseFloat(x)/100); }
+function n(id){ return parseFloat(document.getElementById(id).value); }
+function t(id,val){ document.getElementById(id).value = val; }
 
-function runCalc(){
-    // -------------------------
-    // WACC & COST OF EQUITY
-    // -------------------------
-    const rf = num("rf"), rm = num("rm"), beta = num("beta");
-    const erp = rm - rf;
-    const ke = rf + beta * erp + num("crp") + num("sz");
-    const kd = num("kd") * (1 - 0.23);
-    const d2e = num("d2e");
-    const e = 1/(1+d2e), d = 1-e;
-    const wacc = ke * e + kd * d;
+// ---------------------------------------------------------
+// AUTO-PULL FINANCIALS (Yahoo Finance unofficial endpoint)
+// ---------------------------------------------------------
+async function fetchFinancials(){
+    const ticker = document.getElementById("ticker").value.toUpperCase();
+    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${ticker}?modules=financialData,defaultKeyStatistics`;
 
-    // -------------------------
-    // FORECAST FCFF
-    // -------------------------
-    let revenue = num("rev");
+    document.getElementById("fetchStatus").textContent = "Loading…";
+
+    try{
+        const res = await fetch(url);
+        const data = await res.json();
+        const fd = data.quoteSummary.result[0].financialData;
+        const ks = data.quoteSummary.result[0].defaultKeyStatistics;
+
+        t("rev", fd.totalRevenue.raw);
+        t("ebitda", fd.ebitda.raw);
+        t("shares", ks.sharesOutstanding.raw);
+
+        document.getElementById("fetchStatus").textContent = "✓ Data loaded";
+    }catch(e){
+        document.getElementById("fetchStatus").textContent = "Error fetching data";
+    }
+}
+
+// ---------------------------------------------------------
+// VALUATION ENGINE
+// ---------------------------------------------------------
+function calculate(){
+    const revenue = n("rev");
+    const ebitda = n("ebitda");
+
+    const g = arr(document.getElementById("fg").value);
+    const m = arr(document.getElementById("fm").value);
+    const cap = arr(document.getElementById("cap").value);
+    const wc = arr(document.getElementById("wc").value);
+    const dep = arr(document.getElementById("dep").value);
+
+    let rev = revenue;
     let fcff = [];
 
-    const g = arr("fgrowth"), m = arr("fmargin"),
-          cap = arr("fcapex"), wc = arr("fwc"), dep = arr("fdep");
-
     for(let i=0;i<g.length;i++){
-        revenue *= 1 + g[i];
-        const ebit = revenue * m[i];
-        const nopat = ebit * (1 - 0.23);
-        const depreciation = revenue * dep[i];
-        const capex = revenue * cap[i];
-        const wc_change = revenue * wc[i];
-        const f = nopat + depreciation - capex - wc_change;
+        rev *= 1 + g[i];
+        let ebit = rev * m[i];
+        let nopat = ebit * (1 - 0.23);
+        let f = nopat + rev*dep[i] - rev*cap[i] - rev*wc[i];
         fcff.push(f);
     }
 
-    // -------------------------
-    // DCF
-    // -------------------------
-    const disc = fcff.map((cf,i)=> cf / Math.pow(1+wacc,i+1));
-    const terminal_gordon = fcff[fcff.length-1] * (1+num("tg")) / (wacc - num("tg"));
-    const terminal_disc = terminal_gordon / Math.pow(1+wacc, fcff.length);
-    let dcf = disc.reduce((a,b)=>a+b,0) + terminal_disc;
+    const rf = n("rf")/100, rm = n("rm")/100, beta=n("beta");
+    const ke = rf + beta*(rm-rf) + n("crp")/100 + n("sz")/100;
+    const kd = n("kd")/100 * (1-0.23);
+    const d2e = n("d2e");
+    const e=1/(1+d2e), d=1-e;
+    const wacc = ke*e + kd*d;
 
-    // APPLY ADJUSTMENTS
-    dcf += num("adj_mgmt") + num("adj_rel") + num("adj_exp") - num("adj_inc");
+    const disc = fcff.map((f,i)=>f/Math.pow(1+wacc,i+1));
+    const dcf = disc.reduce((a,b)=>a+b,0)
+        + fcff[fcff.length-1]*(1+n("tg")/100)/(wacc - n("tg")/100)
+        / Math.pow(1+wacc, fcff.length);
 
-    // -------------------------
-    // MULTIPLES
-    // -------------------------
-    const ebitda = num("ebitda");
-    const revenue0 = num("rev");
-    const ev_e = arr("m_ebitda").reduce((a,b)=>a+b)/arr("m_ebitda").length * ebitda;
-    const ev_s = arr("m_sales").reduce((a,b)=>a+b)/arr("m_sales").length * revenue0;
-    const pe = arr("m_pe").reduce((a,b)=>a+b)/arr("m_pe").length * (ebitda*0.7);
-    const pres = arr("m_prec").reduce((a,b)=>a+b)/arr("m_prec").length * ebitda;
+    const ev_e = avg(narr("m_e"))*ebitda;
+    const ev_s = avg(narr("m_s"))*revenue;
+    const pe = avg(narr("m_p"))*(ebitda*0.7);
+    const prec = avg(narr("m_pr"))*ebitda;
+    const multiples = avg([ev_e, ev_s, pe, prec]);
 
-    const multiples_avg = (ev_e+ev_s+pe+pres)/4;
+    const nav = n("ta")+n("ia")+n("cash")-n("debt")-n("mi");
+    const assets = (nav + nav*0.75)/2;
 
-    // -------------------------
-    // ASSET VALUATION
-    // -------------------------
-    const nav = num("tas") + num("ias") + num("cash") - num("debt") - num("mi");
-    const liq = nav * 0.75;
-    const assets_avg = (nav + liq)/2;
+    const fv = 0.55*dcf + 0.30*multiples + 0.15*assets;
+    const perShare = fv / n("shares");
 
-    // -------------------------
-    // FUSION VALUATION
-    // -------------------------
-    const final_value = 0.55*dcf + 0.30*multiples_avg + 0.15*assets_avg;
-
-    const per_share = final_value / num("shares");
-
-    // -------------------------
-    // OUTPUT
-    // -------------------------
     document.getElementById("output").textContent =
 `WACC: ${wacc.toFixed(4)}
-DCF Value: ${dcf.toFixed(2)}
-Multiples Avg: ${multiples_avg.toFixed(2)}
-Asset Value Avg: ${assets_avg.toFixed(2)}
+DCF: ${dcf.toFixed(2)}
+Multiples Avg: ${multiples.toFixed(2)}
+Asset-Based Avg: ${assets.toFixed(2)}
 
------------------------------------
-FINAL VALUATION: ${final_value.toFixed(2)}
-PER SHARE VALUE: ${per_share.toFixed(4)}
------------------------------------
-(All valuation methods: DCF + Multiples + Assets + Adjustments)
+---------------------------------
+FINAL VALUATION: ${fv.toFixed(2)}
+PER SHARE VALUE: ${perShare.toFixed(4)}
+---------------------------------
+(DCF + Multiples + Assets Fusion)
 `;
+
+    window.lastValuation = {fcff, wacc, dcf, multiples, assets, fv, perShare};
+}
+
+function narrative(arr){ return arr.split(",").map(Number); }
+function narr(id){ return narrative(document.getElementById(id).value); }
+function avg(a){ return a.reduce((x,y)=>x+y,0)/a.length; }
+
+// ---------------------------------------------------------
+// EXPORT CSV
+// ---------------------------------------------------------
+function exportCSV(){
+    const v = window.lastValuation;
+    const rows = [
+        ["Metric","Value"],
+        ["DCF Value", v.dcf],
+        ["Multiples Value", v.multiples],
+        ["Assets Value", v.assets],
+        ["Final Valuation", v.fv],
+        ["Per Share Value", v.perShare]
+    ];
+    let csv = rows.map(r=>r.join(",")).join("\n");
+    download("valuation.csv", csv);
+}
+
+// ---------------------------------------------------------
+// EXPORT REPORT (TEXT FILE)
+// ---------------------------------------------------------
+function exportReport(){
+    const v = window.lastValuation;
+    const text =
+`MARKOVFLX VALUATION REPORT
+
+WACC: ${v.wacc.toFixed(4)}
+
+DCF Value: ${v.dcf.toFixed(2)}
+Multiples Value: ${v.multiples.toFixed(2)}
+Asset Value: ${v.assets.toFixed(2)}
+
+FINAL VALUATION: ${v.fv.toFixed(2)}
+PER SHARE VALUE: ${v.perShare.toFixed(4)}`;
+
+    download("valuation-report.txt", text);
+}
+
+// ---------------------------------------------------------
+function download(name, text){
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], {type:"text/plain"}));
+    a.download = name;
+    a.click();
 }
 </script>
 
