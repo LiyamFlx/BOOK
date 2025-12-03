@@ -34,7 +34,7 @@ async function runAutoValuation(){
         // -----------------------------
         const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${symbol}?modules=financialData,defaultKeyStatistics,price,incomeStatementHistory,balanceSheetHistory,earnings`;
 
-        const res = await fetch(`https://yf-proxy.YOURNAME.workers.dev/?url=${encodeURIComponent(url)}`);
+        const res = await fetch(`https://yf-proxy.liyamflexer.workers.dev/?url=${encodeURIComponent(url)}`);
         const data = await res.json();
         const r = data.quoteSummary.result[0];
 
