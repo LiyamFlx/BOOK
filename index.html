@@ -139,6 +139,16 @@
       <div id="dcfProjection"></div>
     </div>
 
+    <div class="detail-section" id="probabilityWeightedSection" style="display:none;">
+      <h2>🎯 Probability-Weighted Valuation (Phase 5)</h2>
+      <div id="probabilityWeighted"></div>
+    </div>
+
+    <div class="detail-section" id="sensitivitySection" style="display:none;">
+      <h2>📊 Sensitivity Analysis: WACC × Terminal Growth (Phase 5)</h2>
+      <div id="sensitivityTable"></div>
+    </div>
+
     <div class="detail-section">
       <h2>Market Approach - Comparable Analysis</h2>
       <div id="marketApproach"></div>
@@ -371,7 +381,7 @@
     </div>
 
     <!-- Phase 4: Working Capital -->
-    <div class="help-section" style="border-bottom: none;">
+    <div class="help-section">
       <h3>💰 Phase 4: Working Capital Assumptions</h3>
       <p style="color: #9ca3af; margin-bottom: 12px;">Customize working capital forecasting parameters</p>
 
@@ -395,6 +405,76 @@
       <div style="margin-top: 12px; padding: 10px; background: rgba(76, 201, 240, 0.1); border-left: 4px solid #4cc9f0; border-radius: 8px;">
         <div style="font-size: 0.85rem; color: #4cc9f0;">
           <strong>Cash Conversion Cycle:</strong> <span id="cccPreview">60 days</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 5: Critical Analytics -->
+    <div class="help-section" style="border-bottom: none;">
+      <h3>🎯 Phase 5: Critical Analytics (Professional)</h3>
+      <p style="color: #9ca3af; margin-bottom: 12px;">Advanced valuation techniques for professional-grade analysis</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Terminal Value Method</label>
+          <select id="terminalValueMethod" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="both" selected>Both Methods (Recommended)</option>
+            <option value="perpetuity">Perpetuity Growth Only</option>
+            <option value="exitMultiple">Exit Multiple Only</option>
+          </select>
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Triangulate terminal value</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Exit EBITDA Multiple</label>
+          <input type="number" id="exitMultiple" placeholder="Auto (peer median)" step="0.5" min="0" max="50" style="width: 100%; margin-top: 4px;" value="">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Leave empty for peer median</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Industry / Business Type</label>
+          <select id="industryType" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="general" selected>General / Mixed</option>
+            <option value="saas">SaaS / Software</option>
+            <option value="ecommerce">E-commerce / Retail</option>
+            <option value="biotech">Biotech / Pharma</option>
+            <option value="financial">Financial Services</option>
+            <option value="manufacturing">Manufacturing</option>
+            <option value="realestate">Real Estate</option>
+          </select>
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Enables industry-specific metrics</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Enable Sensitivity Analysis</label>
+          <select id="enableSensitivity" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="yes" selected>Yes (Show 2-Way Tables)</option>
+            <option value="no">No (Faster Analysis)</option>
+          </select>
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">WACC × Growth table</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 12px;">
+        <label style="color: #9ca3af; font-size: 0.9rem; display: block; margin-bottom: 8px;">Scenario Probabilities (must sum to 100%)</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div>
+            <label style="color: #9ca3af; font-size: 0.85rem;">Bear %</label>
+            <input type="number" id="bearProb" min="0" max="100" step="5" value="20" style="width: 100%; margin-top: 4px;" onchange="updateProbabilityTotal()">
+          </div>
+          <div>
+            <label style="color: #9ca3af; font-size: 0.85rem;">Base %</label>
+            <input type="number" id="baseProb" min="0" max="100" step="5" value="60" style="width: 100%; margin-top: 4px;" onchange="updateProbabilityTotal()">
+          </div>
+          <div>
+            <label style="color: #9ca3af; font-size: 0.85rem;">Bull %</label>
+            <input type="number" id="bullProb" min="0" max="100" step="5" value="20" style="width: 100%; margin-top: 4px;" onchange="updateProbabilityTotal()">
+          </div>
+        </div>
+        <div style="margin-top: 8px; padding: 8px; background: rgba(76, 201, 240, 0.1); border-left: 4px solid #4cc9f0; border-radius: 8px;">
+          <div style="font-size: 0.85rem; color: #4cc9f0;">
+            <strong>Total:</strong> <span id="probTotal">100%</span> <span id="probWarning" style="color: #f87171; display: none;">⚠️ Must equal 100%</span>
+          </div>
         </div>
       </div>
     </div>
@@ -447,7 +527,16 @@ let advancedSettings = {
   // Phase 4: Working capital
   dso: 45,
   dio: 60,
-  dpo: 45
+  dpo: 45,
+
+  // Phase 5: Critical Analytics
+  terminalValueMethod: 'both',
+  exitMultiple: null, // null = auto (use peer median)
+  industryType: 'general',
+  enableSensitivity: true,
+  bearProb: 20,
+  baseProb: 60,
+  bullProb: 20
 };
 
 // ============================================================================
@@ -1047,7 +1136,7 @@ function calculateWACC(normalized) {
 // STEP 5: DCF VALUATION
 // ============================================================================
 
-function computeDCF(projections, normalized, waccData, scenario) {
+function computeDCF(projections, normalized, waccData, scenario, peerMultiples) {
   updateStatus("Step 5/10: Computing DCF valuation...", 50);
 
   const wacc = waccData.wacc;
@@ -1060,12 +1149,77 @@ function computeDCF(projections, normalized, waccData, scenario) {
     return { ...p, discountedFCFF: pv };
   });
 
-  // Terminal Value (Perpetuity Growth Method)
   const lastYear = projections[projections.length - 1];
+
+  // ========== PHASE 5: DUAL TERMINAL VALUE METHODS ==========
+
+  // METHOD 1: Perpetuity Growth
   const terminalGrowth = scenario === 'bull' ? 0.03 : scenario === 'bear' ? 0.02 : 0.025;
   const terminalFCFF = lastYear.fcff * (1 + terminalGrowth);
-  const terminalValue = terminalFCFF / (wacc - terminalGrowth);
-  const pvTerminal = terminalValue / Math.pow(1 + wacc, projections.length);
+  const terminalValuePerpetuity = terminalFCFF / (wacc - terminalGrowth);
+  const pvTerminalPerpetuity = terminalValuePerpetuity / Math.pow(1 + wacc, projections.length);
+
+  console.log('Terminal Value (Perpetuity Growth):', {
+    terminalGrowth: (terminalGrowth * 100).toFixed(2) + '%',
+    terminalFCFF: terminalFCFF.toFixed(0),
+    terminalValue: terminalValuePerpetuity.toFixed(0),
+    presentValue: pvTerminalPerpetuity.toFixed(0)
+  });
+
+  // METHOD 2: Exit Multiple
+  // Determine exit multiple: user input > peer median > industry default
+  let exitMultiple = advancedSettings.exitMultiple; // User specified
+
+  if (!exitMultiple && peerMultiples) {
+    exitMultiple = peerMultiples.evToEbitda; // Peer median
+    console.log('Using peer median exit multiple:', exitMultiple.toFixed(2));
+  }
+
+  if (!exitMultiple) {
+    // Industry defaults
+    const industryExitMultiples = {
+      general: 12,
+      saas: 15,
+      ecommerce: 10,
+      biotech: 14,
+      financial: 9,
+      manufacturing: 11,
+      realestate: 13
+    };
+    exitMultiple = industryExitMultiples[advancedSettings.industryType] || 12;
+    console.log('Using industry default exit multiple:', exitMultiple.toFixed(2));
+  }
+
+  const terminalEBITDA = lastYear.ebitda;
+  const terminalValueExitMultiple = terminalEBITDA * exitMultiple;
+  const pvTerminalExitMultiple = terminalValueExitMultiple / Math.pow(1 + wacc, projections.length);
+
+  console.log('Terminal Value (Exit Multiple):', {
+    exitMultiple: exitMultiple.toFixed(2) + 'x',
+    terminalEBITDA: terminalEBITDA.toFixed(0),
+    terminalValue: terminalValueExitMultiple.toFixed(0),
+    presentValue: pvTerminalExitMultiple.toFixed(0)
+  });
+
+  // Choose terminal value based on user selection
+  let terminalValue, pvTerminal, terminalValueMethod;
+
+  if (advancedSettings.terminalValueMethod === 'perpetuity') {
+    terminalValue = terminalValuePerpetuity;
+    pvTerminal = pvTerminalPerpetuity;
+    terminalValueMethod = 'Perpetuity Growth';
+  } else if (advancedSettings.terminalValueMethod === 'exitMultiple') {
+    terminalValue = terminalValueExitMultiple;
+    pvTerminal = pvTerminalExitMultiple;
+    terminalValueMethod = 'Exit Multiple';
+  } else {
+    // Both methods: 50/50 weighted average
+    terminalValue = (terminalValuePerpetuity + terminalValueExitMultiple) / 2;
+    pvTerminal = (pvTerminalPerpetuity + pvTerminalExitMultiple) / 2;
+    terminalValueMethod = 'Weighted Average (50/50)';
+  }
+
+  console.log(`Final Terminal Value Method: ${terminalValueMethod}, PV: $${pvTerminal.toFixed(0)}`);
 
   // Enterprise Value
   const enterpriseValue = pvFCFF + pvTerminal;
@@ -1084,7 +1238,21 @@ function computeDCF(projections, normalized, waccData, scenario) {
     equityValue,
     valuePerShare,
     discountedFlows,
-    terminalGrowth
+    terminalGrowth,
+    // Phase 5: Dual terminal value methods
+    terminalValueMethods: {
+      perpetuity: {
+        terminalValue: terminalValuePerpetuity,
+        pvTerminal: pvTerminalPerpetuity,
+        growth: terminalGrowth
+      },
+      exitMultiple: {
+        terminalValue: terminalValueExitMultiple,
+        pvTerminal: pvTerminalExitMultiple,
+        multiple: exitMultiple
+      },
+      method: terminalValueMethod
+    }
   };
 }
 
@@ -1351,6 +1519,63 @@ function applyPremiumsAndDiscounts(baseValue, normalized) {
 }
 
 // ============================================================================
+// PHASE 5: SENSITIVITY ANALYSIS
+// ============================================================================
+
+function generateSensitivityAnalysis(normalized, projections, waccData, peerMultiples, scenario) {
+  if (!advancedSettings.enableSensitivity) {
+    return null;
+  }
+
+  console.log('Generating sensitivity analysis tables...');
+
+  // Table 1: WACC × Terminal Growth
+  const baseWACC = waccData.wacc;
+  const waccRange = [
+    baseWACC * 0.85,
+    baseWACC * 0.925,
+    baseWACC,
+    baseWACC * 1.075,
+    baseWACC * 1.15
+  ];
+
+  const terminalGrowthRange = [0.015, 0.020, 0.025, 0.030, 0.035];
+
+  const waccGrowthTable = [];
+
+  terminalGrowthRange.forEach(growth => {
+    const row = { growth };
+    waccRange.forEach(wacc => {
+      // Recalculate DCF with this WACC and growth combo
+      let pvFCFF = 0;
+      projections.forEach(p => {
+        pvFCFF += p.fcff / Math.pow(1 + wacc, p.year);
+      });
+
+      const lastYear = projections[projections.length - 1];
+      const terminalFCFF = lastYear.fcff * (1 + growth);
+      const terminalValue = terminalFCFF / (wacc - growth);
+      const pvTerminal = terminalValue / Math.pow(1 + wacc, projections.length);
+
+      const ev = pvFCFF + pvTerminal;
+      const equityValue = ev + normalized.cash - normalized.debt;
+      const valuePerShare = equityValue / normalized.sharesOutstanding;
+
+      row[`wacc_${(wacc * 100).toFixed(2)}`] = valuePerShare;
+    });
+    waccGrowthTable.push(row);
+  });
+
+  // Table 2: Revenue Growth × EBITDA Margin (optional, simpler version)
+  // For now, return just the WACC × Growth table
+  return {
+    waccGrowthTable,
+    waccRange,
+    terminalGrowthRange
+  };
+}
+
+// ============================================================================
 // STEP 9: SYNTHESIS (Weighted Valuation)
 // ============================================================================
 
@@ -1511,17 +1736,18 @@ async function runFullValuation() {
     // Step 4: Calculate WACC first (needed for DCF)
     const waccData = calculateWACC(normalized);
 
+    // Step 6: Market approach (do once, before scenarios - needed for exit multiple)
+    const marketResult = await marketApproachValuation(normalized);
+    const peerMultiples = marketResult.peerMultiples; // For exit multiple terminal value
+
     // Run all three scenarios
     const scenarios = {};
     for (const scenario of ['base', 'bull', 'bear']) {
       // Step 3: Forecast
       const projections = forecastFinancials(normalized, scenario);
 
-      // Step 5: DCF
-      const dcfResult = computeDCF(projections, normalized, waccData, scenario);
-
-      // Step 6: Market approach
-      const marketResult = marketApproachValuation(normalized);
+      // Step 5: DCF (with peer multiples for exit multiple method)
+      const dcfResult = computeDCF(projections, normalized, waccData, scenario, peerMultiples);
 
       // Step 7: Asset-based
       const assetResult = assetBasedValuation(normalized);
@@ -1529,8 +1755,13 @@ async function runFullValuation() {
       // Step 8: Adjustments
       const adjustments = applyPremiumsAndDiscounts(dcfResult.valuePerShare, normalized);
 
-      // Step 9: Synthesis
+      // Step 9: Synthesis (reuse marketResult from earlier)
       const synthesis = synthesizeValuation(dcfResult, marketResult, assetResult, normalized);
+
+      // Phase 5: Sensitivity Analysis (only for base case to avoid redundancy)
+      const sensitivityAnalysis = scenario === 'base' ?
+        generateSensitivityAnalysis(normalized, projections, waccData, peerMultiples, scenario) :
+        null;
 
       // Step 10: Generate report
       const report = generateValuationReport(
@@ -1538,8 +1769,43 @@ async function runFullValuation() {
         synthesis, waccData, projections, adjustments, scenario
       );
 
+      // Attach sensitivity analysis to base case
+      if (sensitivityAnalysis) {
+        report.sensitivityAnalysis = sensitivityAnalysis;
+      }
+
       scenarios[scenario] = report;
     }
+
+    // ========== PHASE 5: PROBABILITY-WEIGHTED VALUATION ==========
+    const probWeightedValue = (
+      scenarios.bear.fairValue * (advancedSettings.bearProb / 100) +
+      scenarios.base.fairValue * (advancedSettings.baseProb / 100) +
+      scenarios.bull.fairValue * (advancedSettings.bullProb / 100)
+    );
+
+    const probWeightedUpside = ((probWeightedValue / normalized.price) - 1) * 100;
+
+    console.log('Probability-Weighted Valuation:', {
+      bear: `${advancedSettings.bearProb}% × $${scenarios.bear.fairValue.toFixed(2)}`,
+      base: `${advancedSettings.baseProb}% × $${scenarios.base.fairValue.toFixed(2)}`,
+      bull: `${advancedSettings.bullProb}% × $${scenarios.bull.fairValue.toFixed(2)}`,
+      weightedValue: `$${probWeightedValue.toFixed(2)}`,
+      upside: `${probWeightedUpside.toFixed(1)}%`
+    });
+
+    // Attach probability-weighted values to all scenarios
+    Object.values(scenarios).forEach(scenario => {
+      scenario.probabilityWeighted = {
+        fairValue: probWeightedValue,
+        upside: probWeightedUpside,
+        probabilities: {
+          bear: advancedSettings.bearProb,
+          base: advancedSettings.baseProb,
+          bull: advancedSettings.bullProb
+        }
+      };
+    });
 
     // Cache for scenario switching
     cachedValuation = scenarios;
@@ -1640,16 +1906,95 @@ function renderValuationReport(report) {
     </tr>`;
   });
 
-  dcfHTML += `<tr style="font-weight:700; background:#0b0f19;">
-    <td style="padding:8px;" colspan="3">Terminal Value (Growth: ${(report.dcf.terminalGrowth * 100).toFixed(2)}%)</td>
-    <td style="text-align:right; padding:8px;" colspan="2">${formatCurrency(report.dcf.pvTerminal)}</td>
-  </tr>`;
+  // Phase 5: Show both terminal value methods if available
+  if (report.dcf.terminalValueMethods) {
+    const tv = report.dcf.terminalValueMethods;
+    dcfHTML += `<tr style="font-weight:600; background:#0e1320; border-top: 2px solid #23304a;">
+      <td style="padding:8px;" colspan="3">Terminal Value - Perpetuity Growth (${(tv.perpetuity.growth * 100).toFixed(2)}%)</td>
+      <td style="text-align:right; padding:8px;" colspan="2">${formatCurrency(tv.perpetuity.pvTerminal)}</td>
+    </tr>`;
+    dcfHTML += `<tr style="font-weight:600; background:#0e1320;">
+      <td style="padding:8px;" colspan="3">Terminal Value - Exit Multiple (${tv.exitMultiple.multiple.toFixed(2)}x EBITDA)</td>
+      <td style="text-align:right; padding:8px;" colspan="2">${formatCurrency(tv.exitMultiple.pvTerminal)}</td>
+    </tr>`;
+    dcfHTML += `<tr style="font-weight:700; background:#0b0f19; color:#4cc9f0;">
+      <td style="padding:8px;" colspan="3">Terminal Value Used (${tv.method})</td>
+      <td style="text-align:right; padding:8px;" colspan="2">${formatCurrency(report.dcf.pvTerminal)}</td>
+    </tr>`;
+  } else {
+    dcfHTML += `<tr style="font-weight:700; background:#0b0f19;">
+      <td style="padding:8px;" colspan="3">Terminal Value (Growth: ${(report.dcf.terminalGrowth * 100).toFixed(2)}%)</td>
+      <td style="text-align:right; padding:8px;" colspan="2">${formatCurrency(report.dcf.pvTerminal)}</td>
+    </tr>`;
+  }
+
   dcfHTML += `<tr style="font-weight:700; color:#4cc9f0;">
     <td style="padding:8px;" colspan="3">Enterprise Value</td>
     <td style="text-align:right; padding:8px;" colspan="2">${formatCurrency(report.dcf.enterpriseValue)}</td>
   </tr></tbody></table>`;
 
   document.getElementById("dcfProjection").innerHTML = dcfHTML;
+
+  // Phase 5: Probability-Weighted Valuation
+  if (report.probabilityWeighted) {
+    document.getElementById('probabilityWeightedSection').style.display = 'block';
+    const pw = report.probabilityWeighted;
+    let pwHTML = `
+      <div style="margin-bottom: 16px; padding: 16px; background: rgba(76, 201, 240, 0.15); border-left: 4px solid #4cc9f0; border-radius: 8px;">
+        <div style="font-size: 1.1rem; font-weight: 700; color: #4cc9f0; margin-bottom: 12px;">Expected Value: $${pw.fairValue.toFixed(2)} (${pw.upside > 0 ? '+' : ''}${pw.upside.toFixed(1)}% upside)</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+          <div>
+            <div style="color: #9ca3af; font-size: 0.85rem;">Bear Case (${pw.probabilities.bear}%)</div>
+            <div style="font-size: 1.2rem; font-weight: 600; color: #f87171;">$${cachedValuation.bear.fairValue.toFixed(2)}</div>
+          </div>
+          <div>
+            <div style="color: #9ca3af; font-size: 0.85rem;">Base Case (${pw.probabilities.base}%)</div>
+            <div style="font-size: 1.2rem; font-weight: 600; color: #fbbf24;">$${cachedValuation.base.fairValue.toFixed(2)}</div>
+          </div>
+          <div>
+            <div style="color: #9ca3af; font-size: 0.85rem;">Bull Case (${pw.probabilities.bull}%)</div>
+            <div style="font-size: 1.2rem; font-weight: 600; color: #4ade80;">$${cachedValuation.bull.fairValue.toFixed(2)}</div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('probabilityWeighted').innerHTML = pwHTML;
+  } else {
+    document.getElementById('probabilityWeightedSection').style.display = 'none';
+  }
+
+  // Phase 5: Sensitivity Analysis Table
+  if (report.sensitivityAnalysis) {
+    document.getElementById('sensitivitySection').style.display = 'block';
+    const sa = report.sensitivityAnalysis;
+    let saHTML = '<table style="width:100%; border-collapse: collapse; font-size: 0.9rem;"><thead><tr style="border-bottom: 2px solid #23304a;">';
+    saHTML += '<th style="text-align:left; padding:8px; background:#0e1320;">Growth \\ WACC</th>';
+
+    sa.waccRange.forEach(wacc => {
+      saHTML += `<th style="text-align:right; padding:8px; background:#0e1320;">${(wacc * 100).toFixed(1)}%</th>`;
+    });
+    saHTML += '</tr></thead><tbody>';
+
+    sa.waccGrowthTable.forEach((row, idx) => {
+      saHTML += `<tr style="border-bottom: 1px solid #1f2940; ${idx % 2 === 0 ? 'background:#0b0f19;' : ''}">`;
+      saHTML += `<td style="padding:8px; font-weight:600;">${(row.growth * 100).toFixed(1)}%</td>`;
+
+      sa.waccRange.forEach(wacc => {
+        const key = `wacc_${(wacc * 100).toFixed(2)}`;
+        const value = row[key];
+        const isCloseToCurrentPrice = Math.abs(value - report.currentPrice) / report.currentPrice < 0.05;
+        const cellStyle = isCloseToCurrentPrice ? 'color:#4cc9f0; font-weight:700;' : '';
+        saHTML += `<td style="text-align:right; padding:8px; ${cellStyle}">$${value.toFixed(2)}</td>`;
+      });
+      saHTML += '</tr>';
+    });
+
+    saHTML += '</tbody></table>';
+    saHTML += '<div style="margin-top: 8px; color: #9ca3af; font-size: 0.85rem;">💡 Values highlighted in blue are within 5% of current price ($' + report.currentPrice.toFixed(2) + ')</div>';
+    document.getElementById('sensitivityTable').innerHTML = saHTML;
+  } else {
+    document.getElementById('sensitivitySection').style.display = 'none';
+  }
 
   // Market approach
   let marketHTML = '';
@@ -1880,6 +2225,22 @@ function updateCCCPreview() {
   document.getElementById('cccPreview').textContent = `${ccc} days`;
 }
 
+function updateProbabilityTotal() {
+  const bear = parseFloat(document.getElementById('bearProb').value) || 0;
+  const base = parseFloat(document.getElementById('baseProb').value) || 0;
+  const bull = parseFloat(document.getElementById('bullProb').value) || 0;
+  const total = bear + base + bull;
+
+  document.getElementById('probTotal').textContent = `${total}%`;
+
+  const warning = document.getElementById('probWarning');
+  if (Math.abs(total - 100) > 0.1) {
+    warning.style.display = 'inline';
+  } else {
+    warning.style.display = 'none';
+  }
+}
+
 function collectAdvancedSettings() {
   advancedSettings = {
     // Phase 1: Normalization
@@ -1904,7 +2265,16 @@ function collectAdvancedSettings() {
     // Phase 4: Working capital
     dso: parseFloat(document.getElementById('dso').value) || 45,
     dio: parseFloat(document.getElementById('dio').value) || 60,
-    dpo: parseFloat(document.getElementById('dpo').value) || 45
+    dpo: parseFloat(document.getElementById('dpo').value) || 45,
+
+    // Phase 5: Critical Analytics
+    terminalValueMethod: document.getElementById('terminalValueMethod').value || 'both',
+    exitMultiple: parseFloat(document.getElementById('exitMultiple').value) || null,
+    industryType: document.getElementById('industryType').value || 'general',
+    enableSensitivity: document.getElementById('enableSensitivity').value === 'yes',
+    bearProb: parseFloat(document.getElementById('bearProb').value) || 20,
+    baseProb: parseFloat(document.getElementById('baseProb').value) || 60,
+    bullProb: parseFloat(document.getElementById('bullProb').value) || 20
   };
 
   console.log('Advanced settings collected:', advancedSettings);
