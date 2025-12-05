@@ -255,11 +255,14 @@
       <span class="close" onclick="closeAdvancedSettings()">&times;</span>
     </div>
 
-    <!-- Phase 1: Normalization Adjustments -->
+    <!-- Phase 1 & 6: Normalization Adjustments -->
     <div class="help-section">
-      <h3>📊 Phase 1: Normalization Adjustments</h3>
-      <p style="color: #9ca3af; margin-bottom: 12px;">Adjust financials for non-market rates and non-recurring items</p>
+      <h3>📊 Phase 1 & 6: Normalization Adjustments (Professional)</h3>
+      <p style="color: #9ca3af; margin-bottom: 12px;">Comprehensive financial normalization for private companies and special situations</p>
 
+      <div style="margin-bottom: 12px;">
+        <strong style="color: #4cc9f0;">Basic Normalizations</strong>
+      </div>
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
         <div>
           <label style="color: #9ca3af; font-size: 0.9rem;">Owner Salary Adjustment ($)</label>
@@ -295,6 +298,70 @@
           <label style="color: #9ca3af; font-size: 0.9rem;">Inventory Adjustment ($)</label>
           <input type="number" id="inventoryAdj" placeholder="e.g., -25000" style="width: 100%; margin-top: 4px;" value="0">
           <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Obsolete/slow-moving inventory</div>
+        </div>
+      </div>
+
+      <div style="margin: 16px 0 12px 0;">
+        <strong style="color: #4cc9f0;">Phase 6: Advanced Normalizations</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Stock-Based Compensation ($)</label>
+          <input type="number" id="stockBasedComp" placeholder="e.g., 500000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Add back non-cash expense</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Lease Adjustment ($)</label>
+          <input type="number" id="leaseAdj" placeholder="e.g., -50000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Operating vs finance lease diff</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Litigation/Legal Costs ($)</label>
+          <input type="number" id="litigationCosts" placeholder="e.g., 200000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">One-time legal expenses</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Restructuring Charges ($)</label>
+          <input type="number" id="restructuringCharges" placeholder="e.g., 300000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Severance, facility closures</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Bad Debt Reserve Adjustment ($)</label>
+          <input type="number" id="badDebtAdj" placeholder="e.g., -100000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Inadequate/excess reserves</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">R&D Capitalization ($)</label>
+          <input type="number" id="rdCapitalization" placeholder="e.g., 400000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Capitalize vs expense</div>
+        </div>
+      </div>
+
+      <div style="margin: 12px 0;">
+        <strong style="color: #4cc9f0;">Tax Adjustments</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">NOLs (Net Operating Losses) ($)</label>
+          <input type="number" id="nols" placeholder="e.g., 2000000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Tax loss carryforwards</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Deferred Tax Assets ($)</label>
+          <input type="number" id="deferredTaxAssets" placeholder="e.g., 500000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Future tax benefits</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Effective Tax Rate Override (%)</label>
+          <input type="number" id="effectiveTaxRate" placeholder="Leave empty for 21%" min="0" max="50" step="0.5" style="width: 100%; margin-top: 4px;" value="">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Override default 21%</div>
         </div>
       </div>
     </div>
@@ -364,6 +431,130 @@
             <option value="4">4 - Poor ESG</option>
             <option value="5">5 - Very poor ESG</option>
           </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 7: Competitive & Quality Analysis -->
+    <div class="help-section">
+      <h3>🏆 Phase 7: Competitive Position & Quality (Professional)</h3>
+      <p style="color: #9ca3af; margin-bottom: 12px;">Deep dive into competitive advantages, management quality, and revenue characteristics</p>
+
+      <div style="margin-bottom: 12px;">
+        <strong style="color: #4cc9f0;">Management Scorecard (10 Factors)</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Track Record (1-5)</label>
+          <select id="trackRecord" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="1">1 - Poor execution history</option>
+            <option value="2">2 - Below average</option>
+            <option value="3" selected>3 - Average</option>
+            <option value="4">4 - Good execution</option>
+            <option value="5">5 - Exceptional track record</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Insider Ownership (%)</label>
+          <input type="number" id="insiderOwnership" placeholder="0-100%" min="0" max="100" step="1" value="10" style="width: 100%; margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Higher = better alignment</div>
+        </div>
+      </div>
+
+      <div style="margin: 12px 0;">
+        <strong style="color: #4cc9f0;">Revenue Quality</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Recurring Revenue (%)</label>
+          <input type="number" id="recurringRevenue" placeholder="0-100%" min="0" max="100" step="5" value="30" style="width: 100%; margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Subscription, contracts</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Geographic Concentration (%) </label>
+          <input type="number" id="geoConcentration" placeholder="0-100%" min="0" max="100" step="5" value="50" style="width: 100%; margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">% from largest region</div>
+        </div>
+      </div>
+
+      <div style="margin: 12px 0;">
+        <strong style="color: #4cc9f0;">Porter's Five Forces</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Barriers to Entry (1-5)</label>
+          <select id="barriersToEntry" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="1">1 - Very low (easy entry)</option>
+            <option value="2">2 - Low</option>
+            <option value="3" selected>3 - Moderate</option>
+            <option value="4">4 - High</option>
+            <option value="5">5 - Very high (protected)</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Supplier Power (1-5)</label>
+          <select id="supplierPower" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="1">1 - Very low (many suppliers)</option>
+            <option value="2">2 - Low</option>
+            <option value="3" selected>3 - Moderate</option>
+            <option value="4">4 - High</option>
+            <option value="5">5 - Very high (monopoly)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 8: Specialized Scenarios (Control Premiums & Validation) -->
+    <div class="help-section">
+      <h3>⚖️ Phase 8: Control Premiums & Validation (Professional)</h3>
+      <p style="color: #9ca3af; margin-bottom: 12px;">Advanced adjustments for control scenarios and forecast validation</p>
+
+      <div style="margin-bottom: 12px;">
+        <strong style="color: #4cc9f0;">Control & Liquidity Adjustments</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Control Premium (%)</label>
+          <input type="number" id="controlPremium" placeholder="15-40%" min="0" max="100" step="5" value="25" style="width: 100%; margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Typical: 20-35% for majority control</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Minority Discount (%)</label>
+          <input type="number" id="minorityDiscount" placeholder="15-30%" min="0" max="100" step="5" value="20" style="width: 100%; margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Typical: 15-25% for minority stakes</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Marketability Discount (%)</label>
+          <input type="number" id="marketabilityDiscount" placeholder="20-35%" min="0" max="100" step="5" value="25" style="width: 100%; margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">For private/illiquid companies</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Key Person Discount (%)</label>
+          <input type="number" id="keyPersonDiscount" placeholder="5-15%" min="0" max="100" step="2.5" value="10" style="width: 100%; margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Dependency on specific individuals</div>
+        </div>
+      </div>
+
+      <div style="margin: 12px 0;">
+        <strong style="color: #4cc9f0;">Forecast Validation</strong>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Max Reasonable Revenue Growth (%)</label>
+          <input type="number" id="maxRevenueGrowth" placeholder="e.g., 50" min="0" max="200" step="5" value="50" style="width: 100%; margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Flag growth exceeding this %</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Min Acceptable EBITDA Margin (%)</label>
+          <input type="number" id="minEbitdaMargin" placeholder="e.g., -10" min="-50" max="100" step="2.5" value="-10" style="width: 100%; margin-top: 4px;">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Flag margins below this %</div>
         </div>
       </div>
     </div>
@@ -536,7 +727,34 @@ let advancedSettings = {
   enableSensitivity: true,
   bearProb: 20,
   baseProb: 60,
-  bullProb: 20
+  bullProb: 20,
+
+  // Phase 6: Enhanced Normalization
+  stockBasedComp: 0,
+  leaseAdj: 0,
+  litigationCosts: 0,
+  restructuringCharges: 0,
+  badDebtAdj: 0,
+  rdCapitalization: 0,
+  nols: 0,
+  deferredTaxAssets: 0,
+  effectiveTaxRate: null, // null = use default 21%
+
+  // Phase 7: Competitive & Quality Analysis
+  trackRecord: 3,
+  insiderOwnership: 10,
+  recurringRevenue: 30,
+  geoConcentration: 50,
+  barriersToEntry: 3,
+  supplierPower: 3,
+
+  // Phase 8: Specialized Scenarios
+  controlPremium: 25,
+  minorityDiscount: 20,
+  marketabilityDiscount: 25,
+  keyPersonDiscount: 10,
+  maxRevenueGrowth: 50,
+  minEbitdaMargin: -10
 };
 
 // ============================================================================
@@ -795,16 +1013,67 @@ function normalizeFinancials(rawData) {
     console.log(`Rent adjustment: $${advancedSettings.rentAdj.toLocaleString()}`);
   }
 
+  // ========== PHASE 6: ADVANCED NORMALIZATION ADJUSTMENTS ==========
+
+  // 6. Stock-based compensation (add back non-cash expense)
+  if (advancedSettings.stockBasedComp > 0) {
+    netIncome += advancedSettings.stockBasedComp;
+    normalizationAdjustments.expenseAdjustments += advancedSettings.stockBasedComp;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.stockBasedComp;
+    console.log(`Added back stock-based comp: $${advancedSettings.stockBasedComp.toLocaleString()}`);
+  }
+
+  // 7. Lease adjustment (operating vs finance lease)
+  if (advancedSettings.leaseAdj !== 0) {
+    netIncome += advancedSettings.leaseAdj;
+    normalizationAdjustments.expenseAdjustments += advancedSettings.leaseAdj;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.leaseAdj;
+    console.log(`Lease adjustment: $${advancedSettings.leaseAdj.toLocaleString()}`);
+  }
+
+  // 8. Litigation costs (one-time)
+  if (advancedSettings.litigationCosts > 0) {
+    netIncome += advancedSettings.litigationCosts;
+    normalizationAdjustments.expenseAdjustments += advancedSettings.litigationCosts;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.litigationCosts;
+    console.log(`Added back litigation costs: $${advancedSettings.litigationCosts.toLocaleString()}`);
+  }
+
+  // 9. Restructuring charges (one-time)
+  if (advancedSettings.restructuringCharges > 0) {
+    netIncome += advancedSettings.restructuringCharges;
+    normalizationAdjustments.expenseAdjustments += advancedSettings.restructuringCharges;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.restructuringCharges;
+    console.log(`Added back restructuring charges: $${advancedSettings.restructuringCharges.toLocaleString()}`);
+  }
+
+  // 10. Bad debt reserve adjustment
+  if (advancedSettings.badDebtAdj !== 0) {
+    netIncome += advancedSettings.badDebtAdj;
+    normalizationAdjustments.expenseAdjustments += advancedSettings.badDebtAdj;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.badDebtAdj;
+    console.log(`Bad debt reserve adjustment: $${advancedSettings.badDebtAdj.toLocaleString()}`);
+  }
+
+  // 11. R&D capitalization vs expense
+  if (advancedSettings.rdCapitalization !== 0) {
+    netIncome += advancedSettings.rdCapitalization;
+    normalizationAdjustments.expenseAdjustments += advancedSettings.rdCapitalization;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.rdCapitalization;
+    console.log(`R&D capitalization adjustment: $${advancedSettings.rdCapitalization.toLocaleString()}`);
+  }
+
   // Recalculate operating income and EBITDA based on adjusted net income
   operatingIncome = netIncome / 0.75; // Assume net is ~75% of operating after tax
   ebitda = operatingIncome * 1.15; // Add back D&A
 
-  console.log('Normalization summary:', {
+  console.log('Normalization summary (Phases 1 & 6):', {
     originalRevenue: revenue + normalizationAdjustments.revenueAdjustments,
     adjustedRevenue: revenue,
     revenueChange: normalizationAdjustments.revenueAdjustments,
     netIncomeImpact: normalizationAdjustments.netIncomeImpact,
-    adjustedNetIncome: netIncome
+    adjustedNetIncome: netIncome,
+    phase6Adjustments: advancedSettings.stockBasedComp + advancedSettings.litigationCosts + advancedSettings.restructuringCharges
   });
 
   // Balance sheet data
@@ -830,7 +1099,14 @@ function normalizeFinancials(rawData) {
   // Get beta (unlevered and relevered)
   const betaLevered = metrics.beta || 1.2;
   const debtToEquity = totalDebt / totalEquity || 0.3;
-  const taxRate = 0.21;
+
+  // Phase 6: Tax rate override or default
+  const taxRate = advancedSettings.effectiveTaxRate ?
+    advancedSettings.effectiveTaxRate / 100 : // Convert % to decimal
+    0.21; // Default 21%
+
+  console.log(`Using tax rate: ${(taxRate * 100).toFixed(1)}%${advancedSettings.effectiveTaxRate ? ' (override)' : ' (default)'}`);
+
   const betaUnlevered = betaLevered / (1 + (1 - taxRate) * debtToEquity);
 
   // Calculate margins
@@ -908,8 +1184,15 @@ function normalizeFinancials(rawData) {
     currency: profile.currency || "USD",
     name: profile.name || rawData.symbol,
 
-    // Normalization tracking
-    normalizationAdjustments
+    // Normalization tracking (Phases 1 & 6)
+    normalizationAdjustments,
+
+    // Phase 6: Tax attributes
+    taxAttributes: {
+      nols: advancedSettings.nols,
+      deferredTaxAssets: advancedSettings.deferredTaxAssets,
+      effectiveTaxRate: taxRate
+    }
   };
 }
 
@@ -1018,6 +1301,52 @@ function forecastFinancials(normalized, scenario = 'base') {
     });
   }
 
+  // ========== PHASE 8: FORECAST VALIDATION CHECKS ==========
+  const validationWarnings = [];
+
+  projections.forEach((proj, idx) => {
+    // Check 1: Revenue growth exceeds max reasonable threshold
+    const revenueGrowthPct = proj.growthRate * 100;
+    if (revenueGrowthPct > advancedSettings.maxRevenueGrowth) {
+      validationWarnings.push({
+        year: proj.year,
+        type: 'revenue_growth',
+        severity: 'warning',
+        message: `Year ${proj.year} revenue growth (${revenueGrowthPct.toFixed(1)}%) exceeds reasonable maximum (${advancedSettings.maxRevenueGrowth}%)`
+      });
+    }
+
+    // Check 2: EBITDA margin below minimum acceptable threshold
+    const ebitdaMarginPct = proj.ebitdaMargin * 100;
+    if (ebitdaMarginPct < advancedSettings.minEbitdaMargin) {
+      validationWarnings.push({
+        year: proj.year,
+        type: 'ebitda_margin',
+        severity: 'warning',
+        message: `Year ${proj.year} EBITDA margin (${ebitdaMarginPct.toFixed(1)}%) below acceptable minimum (${advancedSettings.minEbitdaMargin}%)`
+      });
+    }
+
+    // Check 3: Negative free cash flow (informational)
+    if (proj.fcff < 0) {
+      validationWarnings.push({
+        year: proj.year,
+        type: 'negative_fcf',
+        severity: 'info',
+        message: `Year ${proj.year} has negative free cash flow: ${proj.fcff.toFixed(0)}`
+      });
+    }
+  });
+
+  if (validationWarnings.length > 0) {
+    console.log(`Phase 8: Forecast Validation - ${validationWarnings.length} warning(s) detected:`, validationWarnings);
+  } else {
+    console.log('Phase 8: Forecast Validation - All checks passed ✓');
+  }
+
+  // Attach validation warnings to projections for display
+  projections.validationWarnings = validationWarnings;
+
   return projections;
 }
 
@@ -1077,11 +1406,42 @@ function calculateWACC(normalized) {
   const esgRiskPremium = (advancedSettings.esgRisk - 3) * 0.005;
   console.log(`ESG risk premium: ${(esgRiskPremium * 100).toFixed(2)}% (rating: ${advancedSettings.esgRisk})`);
 
-  // Total company-specific risk
-  companyRisk += customerConcentrationRisk + moatAdjustment + managementAdjustment +
-                 techRiskPremium + regulatoryRiskPremium + esgRiskPremium;
+  // ========== PHASE 7: ENHANCED COMPETITIVE & QUALITY ANALYSIS ==========
 
-  console.log(`Total company-specific risk: ${(companyRisk * 100).toFixed(2)}%`);
+  // Management track record adjustment (-0.5% to +0.5%)
+  const trackRecordAdjustment = (3 - advancedSettings.trackRecord) * 0.0025;
+  console.log(`Track record adjustment: ${(trackRecordAdjustment * 100).toFixed(2)}% (rating: ${advancedSettings.trackRecord})`);
+
+  // Insider ownership alignment (higher ownership = lower risk, max -0.5%)
+  // 50%+ ownership = -0.5%, 0% = 0%
+  const insiderAlignmentBonus = -(Math.min(advancedSettings.insiderOwnership, 50) / 100) * 0.01;
+  console.log(`Insider alignment bonus: ${(insiderAlignmentBonus * 100).toFixed(2)}% (${advancedSettings.insiderOwnership}% ownership)`);
+
+  // Revenue quality (recurring revenue reduces risk, max -0.75%)
+  // 100% recurring = -0.75%, 0% = 0%
+  const revenueQualityBonus = -(advancedSettings.recurringRevenue / 100) * 0.0075;
+  console.log(`Revenue quality bonus: ${(revenueQualityBonus * 100).toFixed(2)}% (${advancedSettings.recurringRevenue}% recurring)`);
+
+  // Geographic concentration risk (higher concentration = higher risk, max +1%)
+  // 100% concentration = +1%, 0% = 0%
+  const geoConcentrationRisk = (advancedSettings.geoConcentration / 100) * 0.01;
+  console.log(`Geographic concentration risk: ${(geoConcentrationRisk * 100).toFixed(2)}% (${advancedSettings.geoConcentration}% concentration)`);
+
+  // Barriers to entry (higher barriers = lower risk, -1% to +1%)
+  const barriersAdjustment = (3 - advancedSettings.barriersToEntry) * 0.005;
+  console.log(`Barriers to entry adjustment: ${(barriersAdjustment * 100).toFixed(2)}% (rating: ${advancedSettings.barriersToEntry})`);
+
+  // Supplier power risk (higher power = higher risk, -0.5% to +0.5%)
+  const supplierRisk = (advancedSettings.supplierPower - 3) * 0.0025;
+  console.log(`Supplier power risk: ${(supplierRisk * 100).toFixed(2)}% (rating: ${advancedSettings.supplierPower})`);
+
+  // Total company-specific risk (Phase 2 + Phase 7)
+  companyRisk += customerConcentrationRisk + moatAdjustment + managementAdjustment +
+                 techRiskPremium + regulatoryRiskPremium + esgRiskPremium +
+                 trackRecordAdjustment + insiderAlignmentBonus + revenueQualityBonus +
+                 geoConcentrationRisk + barriersAdjustment + supplierRisk;
+
+  console.log(`Total company-specific risk (Phases 2 & 7): ${(companyRisk * 100).toFixed(2)}%`);
 
   // Cost of Equity (CAPM + adjustments)
   const costOfEquity = riskFreeRate +
@@ -1118,16 +1478,26 @@ function calculateWACC(normalized) {
       countryRisk,
       companyRisk
     },
-    // Phase 2: Detailed risk breakdown
+    // Phase 2 & 7: Detailed risk breakdown
     riskBreakdown: {
+      // Phase 2 factors
       customerConcentrationRisk,
       moatAdjustment,
       managementAdjustment,
       techRiskPremium,
       regulatoryRiskPremium,
       esgRiskPremium,
+      // Phase 7 factors
+      trackRecordAdjustment,
+      insiderAlignmentBonus,
+      revenueQualityBonus,
+      geoConcentrationRisk,
+      barriersAdjustment,
+      supplierRisk,
       totalQualitativeRisk: customerConcentrationRisk + moatAdjustment + managementAdjustment +
-                            techRiskPremium + regulatoryRiskPremium + esgRiskPremium
+                            techRiskPremium + regulatoryRiskPremium + esgRiskPremium +
+                            trackRecordAdjustment + insiderAlignmentBonus + revenueQualityBonus +
+                            geoConcentrationRisk + barriersAdjustment + supplierRisk
     }
   };
 }
@@ -1486,27 +1856,39 @@ function assetBasedValuation(normalized) {
 function applyPremiumsAndDiscounts(baseValue, normalized) {
   updateStatus("Step 8/10: Applying control premiums and discounts...", 80);
 
-  // Control premium (20-35% for acquiring control)
-  const controlPremium = 0.25; // 25%
+  // ========== PHASE 8: ENHANCED CONTROL PREMIUMS & DISCOUNTS ==========
+
+  // Control premium (user-configurable)
+  const controlPremium = advancedSettings.controlPremium / 100; // Convert % to decimal
   const controlValue = baseValue * (1 + controlPremium);
 
-  // Minority discount (inverse of control)
-  const minorityDiscount = 0.20; // 20%
+  // Minority discount (user-configurable)
+  const minorityDiscount = advancedSettings.minorityDiscount / 100;
   const minorityValue = baseValue * (1 - minorityDiscount);
 
-  // Marketability discount (for private/illiquid stocks)
+  // Marketability discount (apply user value for private companies, 0 for public)
   const isPubliclyTraded = normalized.marketCap > 100000000; // Assume public if >$100M
-  const marketabilityDiscount = isPubliclyTraded ? 0 : 0.25; // 25% for private
+  const marketabilityDiscount = isPubliclyTraded ? 0 : (advancedSettings.marketabilityDiscount / 100);
   const marketableValue = baseValue * (1 - marketabilityDiscount);
 
-  // Key person discount (if applicable)
-  const keyPersonDiscount = 0.10; // Assume 10% dependence on key management
+  // Key person discount (user-configurable)
+  const keyPersonDiscount = advancedSettings.keyPersonDiscount / 100;
+  const keyPersonValue = baseValue * (1 - keyPersonDiscount);
+
+  console.log('Phase 8: Premiums & Discounts Applied:', {
+    controlPremium: `${(controlPremium * 100).toFixed(1)}%`,
+    minorityDiscount: `${(minorityDiscount * 100).toFixed(1)}%`,
+    marketabilityDiscount: `${(marketabilityDiscount * 100).toFixed(1)}% (${isPubliclyTraded ? 'public' : 'private'})`,
+    keyPersonDiscount: `${(keyPersonDiscount * 100).toFixed(1)}%`
+  });
 
   return {
     baseValue,
     controlValue,
     minorityValue,
     marketableValue,
+    keyPersonValue,
+    isPubliclyTraded,
     discounts: {
       minority: minorityDiscount,
       marketability: marketabilityDiscount,
@@ -2076,14 +2458,28 @@ function renderValuationReport(report) {
   // Phase 2: Risk Factor Breakdown
   if (report.wacc.riskBreakdown) {
     const rb = report.wacc.riskBreakdown;
-    assumptionsHTML += `<h4 style="color: #4cc9f0; margin-bottom: 8px;">🎯 Qualitative Risk Assessment</h4>`;
+    assumptionsHTML += `<h4 style="color: #4cc9f0; margin-bottom: 8px;">🎯 Qualitative Risk Assessment (Phase 2)</h4>`;
     assumptionsHTML += `<div class="metric-row"><span class="metric-label">Customer Concentration Risk</span><span class="metric-value">${(rb.customerConcentrationRisk*100).toFixed(2)}%</span></div>`;
     assumptionsHTML += `<div class="metric-row"><span class="metric-label">Competitive Moat Adjustment</span><span class="metric-value">${(rb.moatAdjustment*100).toFixed(2)}%</span></div>`;
     assumptionsHTML += `<div class="metric-row"><span class="metric-label">Management Quality Adjustment</span><span class="metric-value">${(rb.managementAdjustment*100).toFixed(2)}%</span></div>`;
     assumptionsHTML += `<div class="metric-row"><span class="metric-label">Technology/Disruption Risk</span><span class="metric-value">${(rb.techRiskPremium*100).toFixed(2)}%</span></div>`;
     assumptionsHTML += `<div class="metric-row"><span class="metric-label">Regulatory Risk</span><span class="metric-value">${(rb.regulatoryRiskPremium*100).toFixed(2)}%</span></div>`;
     assumptionsHTML += `<div class="metric-row"><span class="metric-label">ESG Risk</span><span class="metric-value">${(rb.esgRiskPremium*100).toFixed(2)}%</span></div>`;
-    assumptionsHTML += `<div class="metric-row" style="font-weight: 700; color: #4cc9f0;"><span class="metric-label">Total Qualitative Risk Premium</span><span class="metric-value">${(rb.totalQualitativeRisk*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += '<div style="height: 8px;"></div>';
+  }
+
+  // Phase 7: Competitive Position & Quality Analysis
+  if (report.wacc.riskBreakdown && report.wacc.riskBreakdown.trackRecordAdjustment !== undefined) {
+    const rb = report.wacc.riskBreakdown;
+    assumptionsHTML += `<h4 style="color: #4cc9f0; margin-bottom: 8px;">🏆 Competitive & Quality Factors (Phase 7)</h4>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Management Track Record</span><span class="metric-value">${(rb.trackRecordAdjustment*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Insider Alignment Bonus</span><span class="metric-value" style="color: ${rb.insiderAlignmentBonus < 0 ? '#4ade80' : '#f87171'}">${(rb.insiderAlignmentBonus*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Revenue Quality Bonus</span><span class="metric-value" style="color: ${rb.revenueQualityBonus < 0 ? '#4ade80' : '#f87171'}">${(rb.revenueQualityBonus*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Geographic Concentration Risk</span><span class="metric-value">${(rb.geoConcentrationRisk*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Barriers to Entry Adjustment</span><span class="metric-value">${(rb.barriersAdjustment*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Supplier Power Risk</span><span class="metric-value">${(rb.supplierRisk*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += '<div style="height: 8px;"></div>';
+    assumptionsHTML += `<div class="metric-row" style="font-weight: 700; color: #4cc9f0;"><span class="metric-label">Total Risk Premium (Phases 2 & 7)</span><span class="metric-value">${(rb.totalQualitativeRisk*100).toFixed(2)}%</span></div>`;
     assumptionsHTML += '<div style="height: 12px;"></div>';
   }
 
@@ -2108,6 +2504,22 @@ function renderValuationReport(report) {
     <div class="metric-row"><span class="metric-label">Tax Rate</span><span class="metric-value">${(norm.taxRate*100).toFixed(1)}%</span></div>
     <div class="metric-row"><span class="metric-label">Valuation Weights</span><span class="metric-value">DCF ${(report.synthesis.weights.dcf*100).toFixed(0)}%, Market ${(report.synthesis.weights.market*100).toFixed(0)}%, Asset ${(report.synthesis.weights.asset*100).toFixed(0)}%</span></div>
   `;
+
+  // Phase 8: Forecast Validation Warnings
+  if (report.projections.validationWarnings && report.projections.validationWarnings.length > 0) {
+    assumptionsHTML += '<div style="height: 12px;"></div>';
+    assumptionsHTML += `<h4 style="color: #f59e0b; margin-bottom: 8px;">⚠️ Phase 8: Forecast Validation Alerts (${report.projections.validationWarnings.length})</h4>`;
+
+    report.projections.validationWarnings.forEach(warning => {
+      const iconColor = warning.severity === 'warning' ? '#f59e0b' : '#6b7280';
+      const icon = warning.severity === 'warning' ? '⚠️' : 'ℹ️';
+      assumptionsHTML += `<div style="margin-bottom: 6px; padding: 8px; background: rgba(245, 158, 11, 0.1); border-left: 3px solid ${iconColor}; border-radius: 4px; font-size: 0.9rem;">
+        <span style="color: ${iconColor};">${icon} ${warning.message}</span>
+      </div>`;
+    });
+
+    assumptionsHTML += '<div style="font-size: 0.85rem; color: #9ca3af; margin-top: 8px;">💡 These alerts are based on Phase 8 validation thresholds. Review assumptions if needed.</div>';
+  }
 
   document.getElementById("assumptions").innerHTML = assumptionsHTML;
 
@@ -2274,7 +2686,34 @@ function collectAdvancedSettings() {
     enableSensitivity: document.getElementById('enableSensitivity').value === 'yes',
     bearProb: parseFloat(document.getElementById('bearProb').value) || 20,
     baseProb: parseFloat(document.getElementById('baseProb').value) || 60,
-    bullProb: parseFloat(document.getElementById('bullProb').value) || 20
+    bullProb: parseFloat(document.getElementById('bullProb').value) || 20,
+
+    // Phase 6: Enhanced Normalization
+    stockBasedComp: parseFloat(document.getElementById('stockBasedComp').value) || 0,
+    leaseAdj: parseFloat(document.getElementById('leaseAdj').value) || 0,
+    litigationCosts: parseFloat(document.getElementById('litigationCosts').value) || 0,
+    restructuringCharges: parseFloat(document.getElementById('restructuringCharges').value) || 0,
+    badDebtAdj: parseFloat(document.getElementById('badDebtAdj').value) || 0,
+    rdCapitalization: parseFloat(document.getElementById('rdCapitalization').value) || 0,
+    nols: parseFloat(document.getElementById('nols').value) || 0,
+    deferredTaxAssets: parseFloat(document.getElementById('deferredTaxAssets').value) || 0,
+    effectiveTaxRate: parseFloat(document.getElementById('effectiveTaxRate').value) || null,
+
+    // Phase 7: Competitive & Quality Analysis
+    trackRecord: parseInt(document.getElementById('trackRecord').value) || 3,
+    insiderOwnership: parseFloat(document.getElementById('insiderOwnership').value) || 10,
+    recurringRevenue: parseFloat(document.getElementById('recurringRevenue').value) || 30,
+    geoConcentration: parseFloat(document.getElementById('geoConcentration').value) || 50,
+    barriersToEntry: parseInt(document.getElementById('barriersToEntry').value) || 3,
+    supplierPower: parseInt(document.getElementById('supplierPower').value) || 3,
+
+    // Phase 8: Specialized Scenarios
+    controlPremium: parseFloat(document.getElementById('controlPremium').value) || 25,
+    minorityDiscount: parseFloat(document.getElementById('minorityDiscount').value) || 20,
+    marketabilityDiscount: parseFloat(document.getElementById('marketabilityDiscount').value) || 25,
+    keyPersonDiscount: parseFloat(document.getElementById('keyPersonDiscount').value) || 10,
+    maxRevenueGrowth: parseFloat(document.getElementById('maxRevenueGrowth').value) || 50,
+    minEbitdaMargin: parseFloat(document.getElementById('minEbitdaMargin').value) || -10
   };
 
   console.log('Advanced settings collected:', advancedSettings);
