@@ -84,7 +84,7 @@
 
   <div class="input-group">
     <input id="ticker" placeholder="Enter ticker symbol (AAPL, MSFT, GOOGL, TSLA, etc.)" type="text" value="AAPL">
-    <button id="valueBtn" onclick="runFullValuation()">Full DCF Analysis</button>
+    <button id="valueBtn" onclick="showAdvancedSettings()">Full DCF Analysis</button>
     <button onclick="testAPI()" style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);">Test API</button>
     <button onclick="showHelp()" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">Help</button>
   </div>
@@ -237,6 +237,179 @@
   </div>
 </div>
 
+<!-- Advanced Settings Modal -->
+<div id="advancedModal" class="modal">
+  <div class="modal-content" style="max-width: 900px;">
+    <div class="modal-header">
+      <h2>⚙️ Advanced Valuation Settings</h2>
+      <span class="close" onclick="closeAdvancedSettings()">&times;</span>
+    </div>
+
+    <!-- Phase 1: Normalization Adjustments -->
+    <div class="help-section">
+      <h3>📊 Phase 1: Normalization Adjustments</h3>
+      <p style="color: #9ca3af; margin-bottom: 12px;">Adjust financials for non-market rates and non-recurring items</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Owner Salary Adjustment ($)</label>
+          <input type="number" id="ownerSalaryAdj" placeholder="e.g., 100000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Excess/deficit vs market rate</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Related-Party Rent Adjustment ($)</label>
+          <input type="number" id="rentAdj" placeholder="e.g., 50000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Above/below market rent</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Non-Recurring Revenue ($)</label>
+          <input type="number" id="nonRecurringRev" placeholder="e.g., 500000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">One-time revenue to remove</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Non-Recurring Expenses ($)</label>
+          <input type="number" id="nonRecurringExp" placeholder="e.g., 200000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">One-time expenses to add back</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Personal Expenses ($)</label>
+          <input type="number" id="personalExp" placeholder="e.g., 30000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Personal items in financials</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Inventory Adjustment ($)</label>
+          <input type="number" id="inventoryAdj" placeholder="e.g., -25000" style="width: 100%; margin-top: 4px;" value="0">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Obsolete/slow-moving inventory</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 2: Risk & Qualitative Factors -->
+    <div class="help-section">
+      <h3>🎯 Phase 2: Risk & Qualitative Factors</h3>
+      <p style="color: #9ca3af; margin-bottom: 12px;">Assess company-specific risks that affect discount rate</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Customer Concentration (%)</label>
+          <input type="number" id="customerConcentration" placeholder="0-100" min="0" max="100" style="width: 100%; margin-top: 4px;" value="20">
+          <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">% revenue from top 5 customers</div>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Competitive Moat (1-5)</label>
+          <select id="competitiveMoat" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="1">1 - No moat (commodity)</option>
+            <option value="2">2 - Weak moat</option>
+            <option value="3" selected>3 - Moderate moat</option>
+            <option value="4">4 - Strong moat</option>
+            <option value="5">5 - Very strong moat</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Management Quality (1-5)</label>
+          <select id="managementQuality" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="1">1 - Poor track record</option>
+            <option value="2">2 - Below average</option>
+            <option value="3" selected>3 - Average</option>
+            <option value="4">4 - Above average</option>
+            <option value="5">5 - Exceptional</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Technology/Disruption Risk (1-5)</label>
+          <select id="techRisk" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="1">1 - Very low risk</option>
+            <option value="2">2 - Low risk</option>
+            <option value="3" selected>3 - Moderate risk</option>
+            <option value="4">4 - High risk</option>
+            <option value="5">5 - Very high risk</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Regulatory Risk (1-5)</label>
+          <select id="regulatoryRisk" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="1">1 - Very low risk</option>
+            <option value="2">2 - Low risk</option>
+            <option value="3" selected>3 - Moderate risk</option>
+            <option value="4">4 - High risk</option>
+            <option value="5">5 - Very high risk</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">ESG Risk Score (1-5)</label>
+          <select id="esgRisk" style="width: 100%; margin-top: 4px; padding: 14px 16px; border-radius: 12px; border: 2px solid #23304a; background: #101526; color: white;">
+            <option value="1">1 - Excellent ESG</option>
+            <option value="2">2 - Good ESG</option>
+            <option value="3" selected>3 - Average ESG</option>
+            <option value="4">4 - Poor ESG</option>
+            <option value="5">5 - Very poor ESG</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 3: Comparable Companies -->
+    <div class="help-section">
+      <h3>🏢 Phase 3: Comparable Companies</h3>
+      <p style="color: #9ca3af; margin-bottom: 12px;">Enter ticker symbols of comparable companies (comma-separated)</p>
+
+      <div>
+        <label style="color: #9ca3af; font-size: 0.9rem;">Peer Company Tickers</label>
+        <input type="text" id="peerTickers" placeholder="e.g., MSFT, GOOGL, META (leave empty for auto-selection)" style="width: 100%; margin-top: 4px;" value="">
+        <div style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">Leave empty to use industry averages</div>
+      </div>
+    </div>
+
+    <!-- Phase 4: Working Capital -->
+    <div class="help-section" style="border-bottom: none;">
+      <h3>💰 Phase 4: Working Capital Assumptions</h3>
+      <p style="color: #9ca3af; margin-bottom: 12px;">Customize working capital forecasting parameters</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Days Sales Outstanding (DSO)</label>
+          <input type="number" id="dso" placeholder="30-90 days" min="0" max="365" style="width: 100%; margin-top: 4px;" value="45">
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Days Inventory Outstanding (DIO)</label>
+          <input type="number" id="dio" placeholder="30-120 days" min="0" max="365" style="width: 100%; margin-top: 4px;" value="60">
+        </div>
+
+        <div>
+          <label style="color: #9ca3af; font-size: 0.9rem;">Days Payables Outstanding (DPO)</label>
+          <input type="number" id="dpo" placeholder="30-90 days" min="0" max="365" style="width: 100%; margin-top: 4px;" value="45">
+        </div>
+      </div>
+
+      <div style="margin-top: 12px; padding: 10px; background: rgba(76, 201, 240, 0.1); border-left: 4px solid #4cc9f0; border-radius: 8px;">
+        <div style="font-size: 0.85rem; color: #4cc9f0;">
+          <strong>Cash Conversion Cycle:</strong> <span id="cccPreview">60 days</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 20px;">
+      <button onclick="runFullValuationWithSettings()" style="flex: 1;">
+        🚀 Run Advanced Analysis
+      </button>
+      <button onclick="closeAdvancedSettings()" style="flex: 1; background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================================
 // PROFESSIONAL VALUATION ENGINE
@@ -249,6 +422,33 @@ const CORS_PROXY = "https://api.allorigins.win/raw?url=";
 // Current scenario (base, bull, bear)
 let currentScenario = 'base';
 let cachedValuation = null;
+
+// Advanced settings object
+let advancedSettings = {
+  // Phase 1: Normalization
+  ownerSalaryAdj: 0,
+  rentAdj: 0,
+  nonRecurringRev: 0,
+  nonRecurringExp: 0,
+  personalExp: 0,
+  inventoryAdj: 0,
+
+  // Phase 2: Risk factors
+  customerConcentration: 20,
+  competitiveMoat: 3,
+  managementQuality: 3,
+  techRisk: 3,
+  regulatoryRisk: 3,
+  esgRisk: 3,
+
+  // Phase 3: Comparables
+  peerTickers: '',
+
+  // Phase 4: Working capital
+  dso: 45,
+  dio: 60,
+  dpo: 45
+};
 
 // ============================================================================
 // CACHING SYSTEM (5-minute cache)
@@ -415,9 +615,11 @@ async function gatherCompanyData(symbol) {
 // ============================================================================
 
 function normalizeFinancials(rawData) {
-  updateStatus("Step 2/10: Normalizing and cleaning data...", 20);
+  updateStatus("Step 2/10: Normalizing and cleaning data (with adjustments)...", 20);
 
   const { profile, quote, metrics, incomeStatement, balanceSheet, cashFlow } = rawData;
+
+  console.log('Applying normalization adjustments:', advancedSettings);
 
   // Extract key metrics with fallbacks
   // NOTE: Finnhub returns marketCap and shares in MILLIONS
@@ -451,17 +653,82 @@ function normalizeFinancials(rawData) {
     return latest[field] || null;
   };
 
-  // Income statement data
-  const revenue = getMetric(incomeStatement, 'revenue') || metrics.revenueTTM || finalMarketCap * 0.25;
-  const netIncome = getMetric(incomeStatement, 'netIncome') || metrics.netIncomeTTM || revenue * 0.15;
-  const operatingIncome = getMetric(incomeStatement, 'operatingIncome') || revenue * 0.20;
-  const ebitda = metrics.ebitdaTTM || operatingIncome * 1.15 || revenue * 0.25;
+  // Income statement data (RAW)
+  let revenue = getMetric(incomeStatement, 'revenue') || metrics.revenueTTM || finalMarketCap * 0.25;
+  let netIncome = getMetric(incomeStatement, 'netIncome') || metrics.netIncomeTTM || revenue * 0.15;
+  let operatingIncome = getMetric(incomeStatement, 'operatingIncome') || revenue * 0.20;
+  let ebitda = metrics.ebitdaTTM || operatingIncome * 1.15 || revenue * 0.25;
+
+  // ========== PHASE 1: NORMALIZATION ADJUSTMENTS ==========
+  // Track total adjustments for reporting
+  const normalizationAdjustments = {
+    revenueAdjustments: 0,
+    expenseAdjustments: 0,
+    netIncomeImpact: 0
+  };
+
+  // 1. Remove non-recurring revenue
+  if (advancedSettings.nonRecurringRev > 0) {
+    revenue -= advancedSettings.nonRecurringRev;
+    normalizationAdjustments.revenueAdjustments -= advancedSettings.nonRecurringRev;
+    console.log(`Removed non-recurring revenue: $${advancedSettings.nonRecurringRev.toLocaleString()}`);
+  }
+
+  // 2. Add back non-recurring expenses (increases income)
+  if (advancedSettings.nonRecurringExp > 0) {
+    netIncome += advancedSettings.nonRecurringExp;
+    normalizationAdjustments.expenseAdjustments += advancedSettings.nonRecurringExp;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.nonRecurringExp;
+    console.log(`Added back non-recurring expenses: $${advancedSettings.nonRecurringExp.toLocaleString()}`);
+  }
+
+  // 3. Add back personal expenses (increases income)
+  if (advancedSettings.personalExp > 0) {
+    netIncome += advancedSettings.personalExp;
+    normalizationAdjustments.expenseAdjustments += advancedSettings.personalExp;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.personalExp;
+    console.log(`Added back personal expenses: $${advancedSettings.personalExp.toLocaleString()}`);
+  }
+
+  // 4. Owner salary adjustment (if paying above market, add back excess; if below, reduce income)
+  if (advancedSettings.ownerSalaryAdj !== 0) {
+    netIncome += advancedSettings.ownerSalaryAdj; // Positive = paying too much, add back
+    normalizationAdjustments.expenseAdjustments += advancedSettings.ownerSalaryAdj;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.ownerSalaryAdj;
+    console.log(`Owner salary adjustment: $${advancedSettings.ownerSalaryAdj.toLocaleString()}`);
+  }
+
+  // 5. Rent adjustment (related-party transactions)
+  if (advancedSettings.rentAdj !== 0) {
+    netIncome += advancedSettings.rentAdj; // Positive = paying above market, add back
+    normalizationAdjustments.expenseAdjustments += advancedSettings.rentAdj;
+    normalizationAdjustments.netIncomeImpact += advancedSettings.rentAdj;
+    console.log(`Rent adjustment: $${advancedSettings.rentAdj.toLocaleString()}`);
+  }
+
+  // Recalculate operating income and EBITDA based on adjusted net income
+  operatingIncome = netIncome / 0.75; // Assume net is ~75% of operating after tax
+  ebitda = operatingIncome * 1.15; // Add back D&A
+
+  console.log('Normalization summary:', {
+    originalRevenue: revenue + normalizationAdjustments.revenueAdjustments,
+    adjustedRevenue: revenue,
+    revenueChange: normalizationAdjustments.revenueAdjustments,
+    netIncomeImpact: normalizationAdjustments.netIncomeImpact,
+    adjustedNetIncome: netIncome
+  });
 
   // Balance sheet data
-  const totalAssets = getMetric(balanceSheet, 'totalAssets') || metrics.totalAssets || finalMarketCap * 1.5;
+  let totalAssets = getMetric(balanceSheet, 'totalAssets') || metrics.totalAssets || finalMarketCap * 1.5;
   const totalEquity = getMetric(balanceSheet, 'totalStockholderEquity') || metrics.totalEquity || finalMarketCap * 0.5;
   const totalDebt = getMetric(balanceSheet, 'longTermDebt') || metrics.totalDebt || totalEquity * 0.3;
   const cashAndEquiv = getMetric(balanceSheet, 'cashAndCashEquivalents') || metrics.currentAssets * 0.3 || totalAssets * 0.1;
+
+  // 6. Inventory adjustment (obsolete/slow-moving inventory reduction)
+  if (advancedSettings.inventoryAdj !== 0) {
+    totalAssets += advancedSettings.inventoryAdj; // Negative value reduces assets
+    console.log(`Inventory adjustment: $${advancedSettings.inventoryAdj.toLocaleString()}`);
+  }
 
   // Cash flow data
   const freeCashFlow = getMetric(cashFlow, 'freeCashFlow') || metrics.freeCashFlowTTM || netIncome * 0.8;
@@ -550,7 +817,10 @@ function normalizeFinancials(rawData) {
     sector: profile.finnhubIndustry || "Technology",
     country: profile.country || "US",
     currency: profile.currency || "USD",
-    name: profile.name || rawData.symbol
+    name: profile.name || rawData.symbol,
+
+    // Normalization tracking
+    normalizationAdjustments
   };
 }
 
@@ -606,7 +876,30 @@ function forecastFinancials(normalized, scenario = 'base') {
     // CapEx and Working Capital assumptions
     const depreciation = revenue * 0.03; // 3% of revenue
     const capex = revenue * 0.04; // 4% of revenue
-    const changeInWC = revenue * 0.02; // 2% of revenue growth
+
+    // ========== PHASE 4: ENHANCED WORKING CAPITAL FORECASTING ==========
+    // Calculate working capital components based on DSO/DIO/DPO
+    const dso = advancedSettings.dso;
+    const dio = advancedSettings.dio;
+    const dpo = advancedSettings.dpo;
+
+    // Accounts receivable = Revenue * (DSO / 365)
+    const accountsReceivable = revenue * (dso / 365);
+
+    // Inventory (simplified: COGS * DIO / 365)
+    const cogs = revenue * (1 - operatingMargin); // Rough COGS estimate
+    const inventory = cogs * (dio / 365);
+
+    // Accounts payable = COGS * (DPO / 365)
+    const accountsPayable = cogs * (dpo / 365);
+
+    // Working capital = AR + Inventory - AP
+    const workingCapital = accountsReceivable + inventory - accountsPayable;
+
+    // Change in WC from previous year (first year uses revenue growth as proxy)
+    const changeInWC = year === 1 ?
+      revenue * growthRate * 0.15 : // 15% of revenue growth
+      workingCapital - (projections[year - 2].workingCapital || 0);
 
     // Free Cash Flow to Firm
     const fcff = nopat + depreciation - capex - changeInWC;
@@ -623,7 +916,16 @@ function forecastFinancials(normalized, scenario = 'base') {
       capex,
       changeInWC,
       fcff,
-      growthRate
+      growthRate,
+      // Phase 4: Working capital details
+      workingCapital,
+      accountsReceivable,
+      inventory,
+      accountsPayable,
+      dso,
+      dio,
+      dpo,
+      ccc: dso + dio - dpo // Cash Conversion Cycle
     });
   }
 
@@ -655,10 +957,42 @@ function calculateWACC(normalized) {
   // Country risk premium (if not US)
   const countryRisk = normalized.country !== "US" ? 0.02 : 0;
 
-  // Company-specific risk premium (based on profitability)
+  // ========== PHASE 2: ENHANCED RISK ASSESSMENT ==========
+  // Company-specific risk premium (based on profitability + qualitative factors)
   let companyRisk = 0.01; // Base
   if (normalized.profitability.roe < 0.10) companyRisk += 0.03; // Low ROE
   if (normalized.debtToEquity > 1.5) companyRisk += 0.02; // High leverage
+
+  // Customer concentration risk (0-3% premium)
+  const customerConcentrationRisk = (advancedSettings.customerConcentration / 100) * 0.03;
+  console.log(`Customer concentration risk: ${(customerConcentrationRisk * 100).toFixed(2)}% (${advancedSettings.customerConcentration}% concentration)`);
+
+  // Competitive moat adjustment (-1% to +2%)
+  // Strong moat (4-5) = reduce risk by 0.5-1%, Weak moat (1-2) = add 1-2%
+  const moatAdjustment = (3 - advancedSettings.competitiveMoat) * 0.005; // Scale: -1% to +1%
+  console.log(`Competitive moat adjustment: ${(moatAdjustment * 100).toFixed(2)}% (moat rating: ${advancedSettings.competitiveMoat})`);
+
+  // Management quality adjustment (-0.75% to +0.75%)
+  const managementAdjustment = (3 - advancedSettings.managementQuality) * 0.00375;
+  console.log(`Management quality adjustment: ${(managementAdjustment * 100).toFixed(2)}% (rating: ${advancedSettings.managementQuality})`);
+
+  // Technology/disruption risk (0-2% premium)
+  const techRiskPremium = (advancedSettings.techRisk - 3) * 0.005; // -1% to +1%
+  console.log(`Technology risk premium: ${(techRiskPremium * 100).toFixed(2)}% (rating: ${advancedSettings.techRisk})`);
+
+  // Regulatory risk (0-2% premium)
+  const regulatoryRiskPremium = (advancedSettings.regulatoryRisk - 3) * 0.005;
+  console.log(`Regulatory risk premium: ${(regulatoryRiskPremium * 100).toFixed(2)}% (rating: ${advancedSettings.regulatoryRisk})`);
+
+  // ESG risk (0-2% premium)
+  const esgRiskPremium = (advancedSettings.esgRisk - 3) * 0.005;
+  console.log(`ESG risk premium: ${(esgRiskPremium * 100).toFixed(2)}% (rating: ${advancedSettings.esgRisk})`);
+
+  // Total company-specific risk
+  companyRisk += customerConcentrationRisk + moatAdjustment + managementAdjustment +
+                 techRiskPremium + regulatoryRiskPremium + esgRiskPremium;
+
+  console.log(`Total company-specific risk: ${(companyRisk * 100).toFixed(2)}%`);
 
   // Cost of Equity (CAPM + adjustments)
   const costOfEquity = riskFreeRate +
@@ -694,6 +1028,17 @@ function calculateWACC(normalized) {
       sizePremium,
       countryRisk,
       companyRisk
+    },
+    // Phase 2: Detailed risk breakdown
+    riskBreakdown: {
+      customerConcentrationRisk,
+      moatAdjustment,
+      managementAdjustment,
+      techRiskPremium,
+      regulatoryRiskPremium,
+      esgRiskPremium,
+      totalQualitativeRisk: customerConcentrationRisk + moatAdjustment + managementAdjustment +
+                            techRiskPremium + regulatoryRiskPremium + esgRiskPremium
     }
   };
 }
@@ -747,8 +1092,118 @@ function computeDCF(projections, normalized, waccData, scenario) {
 // STEP 6: MARKET APPROACH
 // ============================================================================
 
-function marketApproachValuation(normalized) {
+async function fetchPeerData(symbol) {
+  console.log(`Fetching peer data for ${symbol}...`);
+
+  try {
+    await new Promise(r => setTimeout(r, 300)); // Rate limit delay
+
+    // Fetch quote
+    const quoteUrl = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_KEY}`;
+    const quote = await fetchWithRetry(quoteUrl);
+
+    await new Promise(r => setTimeout(r, 300));
+
+    // Fetch metrics
+    const metricsUrl = `https://finnhub.io/api/v1/stock/metric?symbol=${symbol}&metric=all&token=${FINNHUB_KEY}`;
+    const metricsData = await fetchWithRetry(metricsUrl);
+    const metrics = metricsData.metric || {};
+
+    await new Promise(r => setTimeout(r, 300));
+
+    // Fetch profile
+    const profileUrl = `https://finnhub.io/api/v1/stock/profile2?symbol=${symbol}&token=${FINNHUB_KEY}`;
+    const profile = await fetchWithRetry(profileUrl);
+
+    const price = quote.c || 0;
+    const marketCapMillions = profile.marketCapitalization || 0;
+    const sharesMillions = profile.shareOutstanding || 0;
+    const marketCap = marketCapMillions * 1000000;
+    const sharesOutstanding = sharesMillions * 1000000;
+
+    const revenue = metrics.revenueTTM || 0;
+    const ebitda = metrics.ebitdaTTM || 0;
+    const netIncome = metrics.netIncomeTTM || 0;
+    const bookValue = metrics.totalEquity || 0;
+    const debt = metrics.totalDebt || 0;
+    const cash = metrics.currentAssets * 0.3 || 0;
+
+    const ev = marketCap + debt - cash;
+    const eps = netIncome / sharesOutstanding;
+
+    return {
+      symbol,
+      price,
+      marketCap,
+      revenue,
+      ebitda,
+      netIncome,
+      bookValue,
+      ev,
+      eps,
+      multiples: {
+        evToEbitda: ebitda > 0 ? ev / ebitda : 0,
+        evToSales: revenue > 0 ? ev / revenue : 0,
+        pe: eps > 0 ? price / eps : 0,
+        pb: bookValue > 0 ? marketCap / bookValue : 0
+      }
+    };
+  } catch (err) {
+    console.error(`Failed to fetch peer data for ${symbol}:`, err);
+    return null;
+  }
+}
+
+async function marketApproachValuation(normalized) {
   updateStatus("Step 6/10: Applying market multiples approach...", 60);
+
+  // ========== PHASE 3: REAL COMPARABLE COMPANY ANALYSIS ==========
+  let peerMultiples = null;
+  let peerCompanies = [];
+
+  if (advancedSettings.peerTickers && advancedSettings.peerTickers.trim() !== '') {
+    const tickers = advancedSettings.peerTickers.split(',').map(t => t.trim().toUpperCase()).filter(t => t);
+    console.log(`Fetching data for ${tickers.length} peer companies:`, tickers);
+
+    updateStatus(`Step 6/10: Fetching ${tickers.length} peer companies...`, 60);
+
+    const peerDataPromises = tickers.map(ticker => fetchPeerData(ticker));
+    const peerDataResults = await Promise.all(peerDataPromises);
+    peerCompanies = peerDataResults.filter(p => p !== null);
+
+    if (peerCompanies.length > 0) {
+      // Calculate median multiples from peers
+      const validEVtoEBITDA = peerCompanies.map(p => p.multiples.evToEbitda).filter(m => m > 0);
+      const validEVtoSales = peerCompanies.map(p => p.multiples.evToSales).filter(m => m > 0);
+      const validPE = peerCompanies.map(p => p.multiples.pe).filter(m => m > 0 && m < 100);
+      const validPB = peerCompanies.map(p => p.multiples.pb).filter(m => m > 0);
+
+      const median = arr => {
+        if (arr.length === 0) return 0;
+        arr.sort((a, b) => a - b);
+        const mid = Math.floor(arr.length / 2);
+        return arr.length % 2 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
+      };
+
+      peerMultiples = {
+        evToEbitda: median(validEVtoEBITDA) || 15,
+        evToSales: median(validEVtoSales) || 3,
+        pe: median(validPE) || 20,
+        pb: median(validPB) || 3.5
+      };
+
+      console.log('Peer multiples (median):', peerMultiples);
+      console.log('Peer companies used:', peerCompanies.map(p => ({
+        symbol: p.symbol,
+        evToEbitda: p.multiples.evToEbitda.toFixed(2),
+        pe: p.multiples.pe.toFixed(2)
+      })));
+
+      updateStatus("Step 6/10: Applying peer-derived multiples...", 60);
+    } else {
+      console.warn('No valid peer data fetched, using industry defaults');
+    }
+  }
 
   // Industry average multiples (simplified - in real implementation, fetch comparable companies)
   const industryMultiples = {
@@ -760,17 +1215,25 @@ function marketApproachValuation(normalized) {
     Default: { evToEbitda: 15, evToSales: 3.0, pe: 20, pb: 3.5 }
   };
 
-  const multiples = industryMultiples[normalized.sector] || industryMultiples.Default;
+  // Use peer multiples if available, otherwise use industry defaults
+  const baseMultiples = peerMultiples || (industryMultiples[normalized.sector] || industryMultiples.Default);
 
-  // Apply adjustments for growth and profitability
-  const growthAdjustment = 1 + (normalized.growth.revenue - 0.10); // Adjust for above/below 10% growth
-  const profitabilityAdjustment = 1 + (normalized.profitability.roe - 0.15); // Adjust for ROE
+  console.log(`Using ${peerMultiples ? 'peer-derived' : 'industry default'} multiples:`, baseMultiples);
+
+  // Apply adjustments for growth and profitability (less aggressive if using peer data)
+  const growthAdjustment = peerMultiples ?
+    1 + (normalized.growth.revenue - 0.10) * 0.5 : // 50% weight if peer data
+    1 + (normalized.growth.revenue - 0.10); // Full weight for industry defaults
+
+  const profitabilityAdjustment = peerMultiples ?
+    1 + (normalized.profitability.roe - 0.15) * 0.5 :
+    1 + (normalized.profitability.roe - 0.15);
 
   const adjustedMultiples = {
-    evToEbitda: multiples.evToEbitda * growthAdjustment * profitabilityAdjustment,
-    evToSales: multiples.evToSales * growthAdjustment,
-    pe: multiples.pe * growthAdjustment,
-    pb: multiples.pb * profitabilityAdjustment
+    evToEbitda: baseMultiples.evToEbitda * growthAdjustment * profitabilityAdjustment,
+    evToSales: baseMultiples.evToSales * growthAdjustment,
+    pe: baseMultiples.pe * growthAdjustment,
+    pb: baseMultiples.pb * profitabilityAdjustment
   };
 
   // Calculate implied values
@@ -802,7 +1265,11 @@ function marketApproachValuation(normalized) {
       pe: { value: equityFromPE, multiple: adjustedMultiples.pe },
       pb: { value: equityFromPB, multiple: adjustedMultiples.pb }
     },
-    weights
+    weights,
+    // Phase 3: Peer company data
+    peerCompanies: peerCompanies.length > 0 ? peerCompanies : null,
+    peerMultiples: peerMultiples,
+    usingPeerData: peerMultiples !== null
   };
 }
 
@@ -1185,7 +1652,16 @@ function renderValuationReport(report) {
   document.getElementById("dcfProjection").innerHTML = dcfHTML;
 
   // Market approach
-  let marketHTML = '<div class="metric-row"><span class="metric-label"><strong>Method</strong></span><span class="metric-value"><strong>Multiple</strong></span><span class="metric-value"><strong>Value</strong></span></div>';
+  let marketHTML = '';
+
+  // Add peer company notice if used
+  if (report.market.usingPeerData && report.market.peerCompanies) {
+    marketHTML += `<div style="margin-bottom: 12px; padding: 10px; background: rgba(76, 201, 240, 0.1); border-left: 4px solid #4cc9f0; border-radius: 8px;">
+      <strong>✓ Using Real Peer Data</strong> (${report.market.peerCompanies.length} companies): ${report.market.peerCompanies.map(p => p.symbol).join(', ')}
+    </div>`;
+  }
+
+  marketHTML += '<div class="metric-row"><span class="metric-label"><strong>Method</strong></span><span class="metric-value"><strong>Multiple</strong></span><span class="metric-value"><strong>Value</strong></span></div>';
   Object.entries(report.market.methods).forEach(([key, data]) => {
     marketHTML += `<div class="metric-row">
       <span class="metric-label">${key.toUpperCase()}</span>
@@ -1233,8 +1709,52 @@ function renderValuationReport(report) {
     <div class="metric-row"><span class="metric-label">EPS</span><span class="metric-value">$${norm.eps.toFixed(2)}</span></div>
   `;
 
-  // Assumptions
-  document.getElementById("assumptions").innerHTML = `
+  // Assumptions & Risk Breakdown
+  let assumptionsHTML = '';
+
+  // Phase 1: Normalization Adjustments (if any were applied)
+  const hasNormalizationAdj = norm.normalizationAdjustments &&
+    (norm.normalizationAdjustments.revenueAdjustments !== 0 ||
+     norm.normalizationAdjustments.netIncomeImpact !== 0);
+
+  if (hasNormalizationAdj) {
+    assumptionsHTML += `<h4 style="color: #4cc9f0; margin-top: 0; margin-bottom: 8px;">📊 Normalization Adjustments Applied</h4>`;
+    if (norm.normalizationAdjustments.revenueAdjustments !== 0) {
+      assumptionsHTML += `<div class="metric-row"><span class="metric-label">Revenue Adjustments</span><span class="metric-value">${formatCurrency(norm.normalizationAdjustments.revenueAdjustments)}</span></div>`;
+    }
+    if (norm.normalizationAdjustments.netIncomeImpact !== 0) {
+      assumptionsHTML += `<div class="metric-row"><span class="metric-label">Net Income Impact</span><span class="metric-value" style="color: ${norm.normalizationAdjustments.netIncomeImpact > 0 ? '#4ade80' : '#f87171'}">${formatCurrency(norm.normalizationAdjustments.netIncomeImpact)}</span></div>`;
+    }
+    assumptionsHTML += '<div style="height: 12px;"></div>';
+  }
+
+  // Phase 2: Risk Factor Breakdown
+  if (report.wacc.riskBreakdown) {
+    const rb = report.wacc.riskBreakdown;
+    assumptionsHTML += `<h4 style="color: #4cc9f0; margin-bottom: 8px;">🎯 Qualitative Risk Assessment</h4>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Customer Concentration Risk</span><span class="metric-value">${(rb.customerConcentrationRisk*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Competitive Moat Adjustment</span><span class="metric-value">${(rb.moatAdjustment*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Management Quality Adjustment</span><span class="metric-value">${(rb.managementAdjustment*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Technology/Disruption Risk</span><span class="metric-value">${(rb.techRiskPremium*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Regulatory Risk</span><span class="metric-value">${(rb.regulatoryRiskPremium*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">ESG Risk</span><span class="metric-value">${(rb.esgRiskPremium*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += `<div class="metric-row" style="font-weight: 700; color: #4cc9f0;"><span class="metric-label">Total Qualitative Risk Premium</span><span class="metric-value">${(rb.totalQualitativeRisk*100).toFixed(2)}%</span></div>`;
+    assumptionsHTML += '<div style="height: 12px;"></div>';
+  }
+
+  // Phase 4: Working Capital Metrics
+  const lastProjection = report.projections[report.projections.length - 1];
+  if (lastProjection.ccc !== undefined) {
+    assumptionsHTML += `<h4 style="color: #4cc9f0; margin-bottom: 8px;">💰 Working Capital Assumptions</h4>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Days Sales Outstanding (DSO)</span><span class="metric-value">${lastProjection.dso} days</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Days Inventory Outstanding (DIO)</span><span class="metric-value">${lastProjection.dio} days</span></div>`;
+    assumptionsHTML += `<div class="metric-row"><span class="metric-label">Days Payables Outstanding (DPO)</span><span class="metric-value">${lastProjection.dpo} days</span></div>`;
+    assumptionsHTML += `<div class="metric-row" style="font-weight: 700; color: #4cc9f0;"><span class="metric-label">Cash Conversion Cycle (CCC)</span><span class="metric-value">${lastProjection.ccc} days</span></div>`;
+    assumptionsHTML += '<div style="height: 12px;"></div>';
+  }
+
+  assumptionsHTML += `<h4 style="color: #4cc9f0; margin-bottom: 8px;">📈 Key Valuation Assumptions</h4>`;
+  assumptionsHTML += `
     <div class="metric-row"><span class="metric-label">WACC</span><span class="metric-value">${(report.wacc.wacc*100).toFixed(2)}%</span></div>
     <div class="metric-row"><span class="metric-label">Risk-Free Rate</span><span class="metric-value">${(report.wacc.components.riskFreeRate*100).toFixed(2)}%</span></div>
     <div class="metric-row"><span class="metric-label">Beta (Levered)</span><span class="metric-value">${report.wacc.components.beta.toFixed(2)}</span></div>
@@ -1243,6 +1763,8 @@ function renderValuationReport(report) {
     <div class="metric-row"><span class="metric-label">Tax Rate</span><span class="metric-value">${(norm.taxRate*100).toFixed(1)}%</span></div>
     <div class="metric-row"><span class="metric-label">Valuation Weights</span><span class="metric-value">DCF ${(report.synthesis.weights.dcf*100).toFixed(0)}%, Market ${(report.synthesis.weights.market*100).toFixed(0)}%, Asset ${(report.synthesis.weights.asset*100).toFixed(0)}%</span></div>
   `;
+
+  document.getElementById("assumptions").innerHTML = assumptionsHTML;
 
   // Book summary
   document.getElementById("bookSummary").textContent = `
@@ -1315,15 +1837,84 @@ function closeHelp() {
 function tryTicker(ticker) {
   document.getElementById('ticker').value = ticker;
   closeHelp();
-  runFullValuation();
+  showAdvancedSettings();
 }
 
 // Close modal when clicking outside
 window.onclick = function(event) {
-  const modal = document.getElementById('helpModal');
-  if (event.target == modal) {
+  const helpModal = document.getElementById('helpModal');
+  const advModal = document.getElementById('advancedModal');
+
+  if (event.target == helpModal) {
     closeHelp();
   }
+  if (event.target == advModal) {
+    closeAdvancedSettings();
+  }
+}
+
+// ============================================================================
+// ADVANCED SETTINGS MODAL FUNCTIONS
+// ============================================================================
+
+function showAdvancedSettings() {
+  document.getElementById('advancedModal').style.display = 'block';
+  updateCCCPreview();
+
+  // Attach event listeners for real-time CCC update
+  ['dso', 'dio', 'dpo'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateCCCPreview);
+  });
+}
+
+function closeAdvancedSettings() {
+  document.getElementById('advancedModal').style.display = 'none';
+}
+
+function updateCCCPreview() {
+  const dso = parseFloat(document.getElementById('dso').value) || 45;
+  const dio = parseFloat(document.getElementById('dio').value) || 60;
+  const dpo = parseFloat(document.getElementById('dpo').value) || 45;
+  const ccc = dso + dio - dpo;
+
+  document.getElementById('cccPreview').textContent = `${ccc} days`;
+}
+
+function collectAdvancedSettings() {
+  advancedSettings = {
+    // Phase 1: Normalization
+    ownerSalaryAdj: parseFloat(document.getElementById('ownerSalaryAdj').value) || 0,
+    rentAdj: parseFloat(document.getElementById('rentAdj').value) || 0,
+    nonRecurringRev: parseFloat(document.getElementById('nonRecurringRev').value) || 0,
+    nonRecurringExp: parseFloat(document.getElementById('nonRecurringExp').value) || 0,
+    personalExp: parseFloat(document.getElementById('personalExp').value) || 0,
+    inventoryAdj: parseFloat(document.getElementById('inventoryAdj').value) || 0,
+
+    // Phase 2: Risk factors
+    customerConcentration: parseFloat(document.getElementById('customerConcentration').value) || 20,
+    competitiveMoat: parseInt(document.getElementById('competitiveMoat').value) || 3,
+    managementQuality: parseInt(document.getElementById('managementQuality').value) || 3,
+    techRisk: parseInt(document.getElementById('techRisk').value) || 3,
+    regulatoryRisk: parseInt(document.getElementById('regulatoryRisk').value) || 3,
+    esgRisk: parseInt(document.getElementById('esgRisk').value) || 3,
+
+    // Phase 3: Comparables
+    peerTickers: document.getElementById('peerTickers').value.trim(),
+
+    // Phase 4: Working capital
+    dso: parseFloat(document.getElementById('dso').value) || 45,
+    dio: parseFloat(document.getElementById('dio').value) || 60,
+    dpo: parseFloat(document.getElementById('dpo').value) || 45
+  };
+
+  console.log('Advanced settings collected:', advancedSettings);
+  return advancedSettings;
+}
+
+function runFullValuationWithSettings() {
+  collectAdvancedSettings();
+  closeAdvancedSettings();
+  runFullValuation();
 }
 
 // ============================================================================
